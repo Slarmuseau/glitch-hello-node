@@ -40,7 +40,12 @@
           <!-- Destination -->
           <div class="form-section">
             <h2 class="section-title">Destination</h2>
-            <p class="section-desc">What type of destination are you heading to?</p>
+            <p class="section-desc">Tell us where you're going for a personalized packing list, weather forecast, and local travel tips.</p>
+            <div class="form-group">
+              <label for="customDestination">Where are you going?</label>
+              <input type="text" id="customDestination" name="customDestination" placeholder="e.g. Paris, Tokyo, Barcelona..." class="input-prominent" />
+              <span class="form-hint">Enter a city or region to get a weather forecast and destination-specific advice</span>
+            </div>
             <div class="form-group">
               <label for="destination">Destination Type</label>
               <select id="destination" name="destination" required>
@@ -51,10 +56,6 @@
                 <option value="tropical">Tropical</option>
                 <option value="countryside">Countryside / Rural</option>
               </select>
-            </div>
-            <div class="form-group">
-              <label for="customDestination">Specific Destination (optional)</label>
-              <input type="text" id="customDestination" name="customDestination" placeholder="e.g. Barcelona, Spain" />
             </div>
             <div class="form-group">
               <label for="international">Is this an international trip?</label>

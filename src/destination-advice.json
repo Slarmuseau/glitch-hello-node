@@ -1,0 +1,373 @@
+{
+  "countries": {
+    "france": {
+      "tips": [
+        "Most shops and restaurants close on Sundays and some on Monday mornings.",
+        "Tipping is not expected in France as service is included (service compris), but rounding up is appreciated.",
+        "Pharmacies (green cross sign) are excellent for health advice, not just medication.",
+        "Always greet shopkeepers with 'Bonjour' when entering -- it's considered rude not to.",
+        "Tap water is safe to drink everywhere. Ask for 'une carafe d'eau' for free water at restaurants."
+      ],
+      "currency": "EUR",
+      "language": "French",
+      "plugType": "Type C/E (European two-pin)",
+      "emergency": "112"
+    },
+    "spain": {
+      "tips": [
+        "Lunch is the main meal, typically from 2-4 PM. Restaurants may not open for dinner until 9 PM.",
+        "Siesta culture means many shops close from 2-5 PM, especially outside big cities.",
+        "Tapas are often free with drinks in cities like Granada and Salamanca.",
+        "Be alert for pickpockets on La Rambla in Barcelona and in crowded metro stations.",
+        "Learn to say 'por favor' (please) and 'gracias' (thank you) -- it goes a long way."
+      ],
+      "currency": "EUR",
+      "language": "Spanish",
+      "plugType": "Type C/F (European two-pin)",
+      "emergency": "112"
+    },
+    "italy": {
+      "tips": [
+        "Many churches require covered shoulders and knees for entry -- carry a scarf or wrap.",
+        "Espresso is drunk standing at the bar. Sitting at a table costs more (coperto).",
+        "Validate train tickets before boarding at the small machines on platforms.",
+        "Italian drivers can be aggressive -- be extra cautious when crossing streets.",
+        "Water from public fountains (nasoni) in Rome is safe and refreshing."
+      ],
+      "currency": "EUR",
+      "language": "Italian",
+      "plugType": "Type C/F/L (European two/three-pin)",
+      "emergency": "112"
+    },
+    "germany": {
+      "tips": [
+        "Many shops and restaurants are cash-only (Bargeld), especially smaller ones.",
+        "Shops are closed on Sundays by law (except at train stations and airports).",
+        "Tap water is safe but not always free in restaurants -- ask for Leitungswasser.",
+        "Recycling is taken seriously. Return bottles with Pfand deposit for a refund.",
+        "Jaywalking is frowned upon and occasionally fined, even if no cars are coming."
+      ],
+      "currency": "EUR",
+      "language": "German",
+      "plugType": "Type C/F (European two-pin)",
+      "emergency": "112"
+    },
+    "united kingdom": {
+      "tips": [
+        "The weather is unpredictable year-round -- always carry a waterproof layer.",
+        "Driving is on the left side of the road. Look right first when crossing streets.",
+        "Tipping 10-15% is customary in sit-down restaurants but not in pubs.",
+        "The Tube (London Underground) gets very hot in summer -- carry water.",
+        "Many museums and galleries in London are free to enter."
+      ],
+      "currency": "GBP",
+      "language": "English",
+      "plugType": "Type G (three-pin rectangular)",
+      "emergency": "999 or 112"
+    },
+    "united states": {
+      "tips": [
+        "Tipping 15-20% is expected at restaurants, bars, and for taxi rides.",
+        "Sales tax is not included in displayed prices -- expect to pay more at checkout.",
+        "Distances between cities are vast. Consider flying or renting a car for long trips.",
+        "Free refills on soft drinks and coffee are common at most restaurants.",
+        "Check if you need an ESTA visa waiver before traveling."
+      ],
+      "currency": "USD",
+      "language": "English",
+      "plugType": "Type A/B (two flat pins)",
+      "emergency": "911"
+    },
+    "japan": {
+      "tips": [
+        "Carry cash -- many places, especially outside Tokyo, don't accept cards.",
+        "Tipping is not customary and can even be considered rude.",
+        "Remove shoes when entering homes, temples, and some restaurants (look for shoe racks).",
+        "Trains run exactly on time. Being even a minute late means missing your train.",
+        "It's considered rude to eat or drink while walking. Stop and consume food at the stall."
+      ],
+      "currency": "JPY",
+      "language": "Japanese",
+      "plugType": "Type A (two flat pins, no ground)",
+      "emergency": "110 (police) / 119 (fire/ambulance)"
+    },
+    "thailand": {
+      "tips": [
+        "Always show respect to images and statues of the King and Buddha.",
+        "Remove shoes before entering temples and homes.",
+        "Bargaining is expected at markets but not in malls or convenience stores.",
+        "Street food is safe and excellent -- eat at busy stalls with high turnover.",
+        "The rainy season (June-October) brings heavy but short afternoon downpours."
+      ],
+      "currency": "THB",
+      "language": "Thai",
+      "plugType": "Type A/B/C (varies -- bring a universal adapter)",
+      "emergency": "191 (police) / 1669 (ambulance)"
+    },
+    "australia": {
+      "tips": [
+        "Slip, slop, slap: slip on a shirt, slop on sunscreen, slap on a hat. UV is extreme.",
+        "Don't swim at unpatrolled beaches. Always swim between the red and yellow flags.",
+        "Australia has strict biosecurity. Declare all food, plants, and animal products on arrival.",
+        "Distances are huge. Plan drives carefully and carry extra water for outback travel.",
+        "Tipping is not expected but rounding up is appreciated."
+      ],
+      "currency": "AUD",
+      "language": "English",
+      "plugType": "Type I (angled flat pins)",
+      "emergency": "000"
+    },
+    "mexico": {
+      "tips": [
+        "Drink bottled water only. Avoid ice from unknown sources.",
+        "Negotiate taxi fares before getting in, or use ride-share apps.",
+        "Street food is amazing but stick to busy stalls where food is cooked fresh.",
+        "Keep copies of your passport separate from the original.",
+        "Learn some basic Spanish -- it's warmly received and helpful outside tourist areas."
+      ],
+      "currency": "MXN",
+      "language": "Spanish",
+      "plugType": "Type A/B (same as US/Canada)",
+      "emergency": "911"
+    },
+    "greece": {
+      "tips": [
+        "Island ferries can be delayed or cancelled due to strong winds (meltemi).",
+        "Carry cash for tavernas and small shops, especially on islands.",
+        "Tap water is safe on the mainland but not always on smaller islands.",
+        "Topless sunbathing is common on many beaches, but nudity only on designated ones.",
+        "Try to visit popular sites like the Acropolis early morning to avoid crowds and heat."
+      ],
+      "currency": "EUR",
+      "language": "Greek",
+      "plugType": "Type C/F (European two-pin)",
+      "emergency": "112"
+    },
+    "portugal": {
+      "tips": [
+        "Lisbon is very hilly -- wear comfortable walking shoes with good grip.",
+        "Try pastéis de nata (custard tarts) at a traditional pastelaria.",
+        "Portugal is very safe, but be cautious of petty theft in tourist areas.",
+        "Tap water is safe to drink throughout the country.",
+        "Many restaurants offer a 'prato do dia' (dish of the day) which is usually excellent value."
+      ],
+      "currency": "EUR",
+      "language": "Portuguese",
+      "plugType": "Type C/F (European two-pin)",
+      "emergency": "112"
+    },
+    "turkey": {
+      "tips": [
+        "Bargaining is expected in bazaars and markets. Start at about half the asking price.",
+        "Remove shoes when entering mosques. Women should cover their heads.",
+        "Turkish breakfast is legendary -- try a full spread at a local café.",
+        "The Istanbul Kart is essential for public transport in Istanbul (metro, tram, ferry).",
+        "Tap water is generally safe but locals prefer bottled water."
+      ],
+      "currency": "TRY",
+      "language": "Turkish",
+      "plugType": "Type C/F (European two-pin)",
+      "emergency": "112"
+    },
+    "morocco": {
+      "tips": [
+        "Dress modestly, especially when visiting medinas and rural areas.",
+        "Bargaining is expected in souks. Never accept the first price.",
+        "Riads (traditional guesthouses) offer a much more authentic experience than hotels.",
+        "Drink mint tea generously offered by locals -- refusing can be considered rude.",
+        "Use registered guides in cities to avoid scams and get the best experience."
+      ],
+      "currency": "MAD",
+      "language": "Arabic / French",
+      "plugType": "Type C/E (European two-pin)",
+      "emergency": "19 (police) / 15 (ambulance)"
+    },
+    "india": {
+      "tips": [
+        "Drink only bottled water. Check the seal is intact before buying.",
+        "Dress conservatively when visiting temples and religious sites.",
+        "Negotiate auto-rickshaw and taxi fares before getting in.",
+        "Street food is incredible but start slowly to let your stomach adjust.",
+        "The left hand is considered unclean -- use your right hand for eating and greetings."
+      ],
+      "currency": "INR",
+      "language": "Hindi / English",
+      "plugType": "Type C/D/M (varies -- bring a universal adapter)",
+      "emergency": "112"
+    },
+    "south korea": {
+      "tips": [
+        "T-money card works on all public transport in Seoul and major cities.",
+        "Convenience stores (7-Eleven, CU, GS25) are excellent for cheap, quality meals.",
+        "Wi-Fi is available almost everywhere, including public buses and subways.",
+        "Take off shoes when entering homes and some traditional restaurants.",
+        "Tipping is not expected and can cause confusion."
+      ],
+      "currency": "KRW",
+      "language": "Korean",
+      "plugType": "Type C/F (European two-pin)",
+      "emergency": "112"
+    },
+    "brazil": {
+      "tips": [
+        "Avoid showing expensive jewelry, phones, or cameras in public.",
+        "Learn basic Portuguese phrases -- English is not widely spoken outside tourist areas.",
+        "Use ride-share apps instead of hailing taxis on the street.",
+        "Tap water is treated but locals prefer filtered water. Buy bottled to be safe.",
+        "Always carry a copy of your passport, not the original."
+      ],
+      "currency": "BRL",
+      "language": "Portuguese",
+      "plugType": "Type N (three-pin round)",
+      "emergency": "190 (police) / 192 (ambulance)"
+    },
+    "canada": {
+      "tips": [
+        "Tipping 15-20% is customary in restaurants and for services.",
+        "Weather varies drastically by region. Check conditions for your specific destination.",
+        "Many areas are remote -- download offline maps and carry emergency supplies.",
+        "Canadian dollars look different from US dollars. Check your change.",
+        "Be bear-aware when hiking. Carry bear spray in national parks."
+      ],
+      "currency": "CAD",
+      "language": "English / French",
+      "plugType": "Type A/B (same as US)",
+      "emergency": "911"
+    },
+    "egypt": {
+      "tips": [
+        "Dress modestly, especially at religious sites. Women should carry a headscarf.",
+        "Negotiate prices before hiring guides, camels, or buying at markets.",
+        "Drink bottled water only. Avoid raw vegetables washed in tap water.",
+        "Carry small bills for tips (baksheesh), which is customary for most services.",
+        "Visit major sites early in the morning to avoid intense afternoon heat."
+      ],
+      "currency": "EGP",
+      "language": "Arabic",
+      "plugType": "Type C/F (European two-pin)",
+      "emergency": "122 (police) / 123 (ambulance)"
+    },
+    "netherlands": {
+      "tips": [
+        "Cyclists have right of way in most situations. Watch out for bike lanes when walking.",
+        "An OV-chipkaart is the easiest way to use all public transport.",
+        "Most places accept cards, including contactless payments.",
+        "Coffeeshops sell cannabis; coffee houses (koffiehuizen) sell actual coffee.",
+        "Wind can be fierce, especially near the coast. Bring a windproof jacket."
+      ],
+      "currency": "EUR",
+      "language": "Dutch",
+      "plugType": "Type C/F (European two-pin)",
+      "emergency": "112"
+    },
+    "croatia": {
+      "tips": [
+        "Dubrovnik and Split get extremely crowded in summer -- visit in shoulder season if possible.",
+        "Croatian kuna has been replaced by the Euro (since Jan 2023).",
+        "Water from public fountains is safe to drink in most Croatian cities.",
+        "Island hopping by ferry is easy but book ahead in summer.",
+        "Many beaches are pebbly -- bring water shoes for comfort."
+      ],
+      "currency": "EUR",
+      "language": "Croatian",
+      "plugType": "Type C/F (European two-pin)",
+      "emergency": "112"
+    },
+    "vietnam": {
+      "tips": [
+        "Crossing the street can be overwhelming -- walk slowly and steadily, and traffic flows around you.",
+        "Street food is some of the best in the world. Follow the crowds to find the best stalls.",
+        "Bargaining is expected at markets. Be polite and smile.",
+        "Carry small bills -- many places cannot break large notes.",
+        "Motorbike taxis (xe om) and Grab are cheap ways to get around."
+      ],
+      "currency": "VND",
+      "language": "Vietnamese",
+      "plugType": "Type A/C (varies -- bring a universal adapter)",
+      "emergency": "113 (police) / 115 (ambulance)"
+    },
+    "iceland": {
+      "tips": [
+        "Weather changes rapidly -- dress in waterproof, windproof layers.",
+        "Never walk on glacier ice without a certified guide and proper gear.",
+        "The Ring Road (Route 1) is the best way to see the country -- allow at least 7-10 days.",
+        "Hot springs and geothermal pools are everywhere -- always bring a swimsuit.",
+        "Iceland is very expensive. Self-catering and camping can save significant money."
+      ],
+      "currency": "ISK",
+      "language": "Icelandic (English widely spoken)",
+      "plugType": "Type C/F (European two-pin)",
+      "emergency": "112"
+    },
+    "new zealand": {
+      "tips": [
+        "Respect Maori culture -- learn basic greetings like 'Kia ora' (hello).",
+        "Biosecurity is strict. Declare all food, plant material, and outdoor gear on arrival.",
+        "Distances look short on maps but roads are winding. Allow extra driving time.",
+        "The UV index is extreme, even on cloudy days. Wear SPF 50+ sunscreen.",
+        "Free campsites exist but check local regulations before camping."
+      ],
+      "currency": "NZD",
+      "language": "English / Maori",
+      "plugType": "Type I (angled flat pins, same as Australia)",
+      "emergency": "111"
+    },
+    "switzerland": {
+      "tips": [
+        "Switzerland is extremely expensive. Budget carefully for meals and transport.",
+        "The Swiss Travel Pass offers excellent value for unlimited train, bus, and boat travel.",
+        "Tap water is safe and high quality everywhere, including public fountains.",
+        "Quiet hours are strictly observed -- avoid noise after 10 PM and on Sundays.",
+        "Carry CHF cash as not all mountain huts and small shops accept cards."
+      ],
+      "currency": "CHF",
+      "language": "German / French / Italian",
+      "plugType": "Type J (three-pin round, unique to Switzerland)",
+      "emergency": "112"
+    }
+  },
+  "fallbackByRegion": {
+    "europe": [
+      "Most of Europe uses the Euro, but some countries have their own currency. Check before you go.",
+      "European plug types vary but Type C (two round pins) works in most countries.",
+      "Trains are an excellent way to travel between European cities. Book in advance for better prices.",
+      "Many European cities have excellent free walking tours -- just tip your guide.",
+      "Tap water is generally safe across Western Europe."
+    ],
+    "asia": [
+      "Respect local customs around temples and religious sites -- remove shoes and dress modestly.",
+      "Street food is often safer than restaurant food because you can see it being prepared.",
+      "Bargaining is expected in markets across most of Asia.",
+      "Download offline maps and translation apps before you go.",
+      "Check visa requirements well in advance -- some countries need pre-arranged visas."
+    ],
+    "americas": [
+      "Distances in the Americas are vast -- domestic flights can save days of travel.",
+      "Tap water quality varies significantly by country. When in doubt, drink bottled.",
+      "Tipping culture varies widely across the Americas. Research your specific destination.",
+      "Spanish is the most widely spoken language in Latin America, but Portuguese is spoken in Brazil.",
+      "Altitude sickness can be an issue in Andean countries. Acclimatize slowly."
+    ],
+    "africa": [
+      "Yellow fever vaccination certificates may be required at borders.",
+      "Take anti-malaria precautions in tropical and sub-tropical regions.",
+      "Carry US dollars as they're widely accepted as a secondary currency.",
+      "Internet connectivity can be unreliable outside major cities. Download offline resources.",
+      "Respect local customs and ask before photographing people."
+    ],
+    "oceania": [
+      "UV radiation is extreme in Australia and New Zealand. Wear high-SPF sunscreen daily.",
+      "Biosecurity is taken very seriously. Declare all food and biological materials.",
+      "Distances are vast -- plan your itinerary carefully.",
+      "Water sports and outdoor activities are a must. Pack accordingly.",
+      "Respect Indigenous cultures and sacred sites."
+    ],
+    "middle_east": [
+      "Dress conservatively, especially in religious areas. Women should carry a headscarf.",
+      "Alcohol is restricted or prohibited in several countries. Check local laws.",
+      "Fridays are the holy day -- many businesses close or have reduced hours.",
+      "Haggling is expected in souks and traditional markets.",
+      "Carry cash in local currency for smaller purchases and markets."
+    ]
+  }
+}

@@ -51,6 +51,8 @@ Handlebars.registerHelper("contains", function (arr, value) {
 const packingData = require("./src/packing-data.json");
 const travelAdvice = require("./src/travel-advice.json");
 const documentsData = require("./src/documents-data.json");
+const destinationAdvice = require("./src/destination-advice.json");
+const { getWeather } = require("./src/weather");
 
 const seo = require("./src/seo.json");
 if (seo.url === "glitch-default") {
@@ -149,8 +151,8 @@ function generatePackingList(trip) {
   return items;
 }
 
-// Generate travel advice
-function generateAdvice(trip) {
+// Generate travel advice (with destination-specific tips)
+function generateAdvice(trip, weatherLocation) {
   const advice = [...travelAdvice.general];
 
   if (travelAdvice.byDestination[trip.destination]) {
@@ -163,7 +165,70 @@ function generateAdvice(trip) {
     advice.push(...travelAdvice.byObjective[trip.objective]);
   }
 
+  // Add destination-specific advice based on custom destination or geocoded location
+  const specificAdvice = getDestinationSpecificAdvice(trip, weatherLocation);
+  if (specificAdvice) {
+    advice.push(...specificAdvice.tips);
+  }
+
   return advice;
+}
+
+// Look up destination-specific advice from the database
+function getDestinationSpecificAdvice(trip, weatherLocation) {
+  const searchTerms = [];
+
+  // Build search terms from custom destination and geocoded location
+  if (trip.customDestination) {
+    searchTerms.push(trip.customDestination.toLowerCase().trim());
+  }
+  if (weatherLocation) {
+    if (weatherLocation.country) searchTerms.push(weatherLocation.country.toLowerCase());
+    if (weatherLocation.name) searchTerms.push(weatherLocation.name.toLowerCase());
+  }
+
+  // Try to match country in our database
+  for (const term of searchTerms) {
+    for (const [country, data] of Object.entries(destinationAdvice.countries)) {
+      if (term.includes(country) || country.includes(term)) {
+        return data;
+      }
+    }
+  }
+
+  // Fallback: try to match by region using the geocoded location
+  if (weatherLocation) {
+    const tz = (weatherLocation.timezone || "").toLowerCase();
+    if (tz.includes("europe")) return { tips: destinationAdvice.fallbackByRegion.europe };
+    if (tz.includes("asia")) return { tips: destinationAdvice.fallbackByRegion.asia };
+    if (tz.includes("america")) return { tips: destinationAdvice.fallbackByRegion.americas };
+    if (tz.includes("africa")) return { tips: destinationAdvice.fallbackByRegion.africa };
+    if (tz.includes("australia") || tz.includes("pacific")) return { tips: destinationAdvice.fallbackByRegion.oceania };
+  }
+
+  return null;
+}
+
+// Get destination info (currency, language, plug type, etc.)
+function getDestinationInfo(trip, weatherLocation) {
+  const searchTerms = [];
+  if (trip.customDestination) searchTerms.push(trip.customDestination.toLowerCase().trim());
+  if (weatherLocation && weatherLocation.country) searchTerms.push(weatherLocation.country.toLowerCase());
+
+  for (const term of searchTerms) {
+    for (const [country, data] of Object.entries(destinationAdvice.countries)) {
+      if (term.includes(country) || country.includes(term)) {
+        return {
+          country: country.replace(/\b\w/g, (c) => c.toUpperCase()),
+          currency: data.currency,
+          language: data.language,
+          plugType: data.plugType,
+          emergency: data.emergency,
+        };
+      }
+    }
+  }
+  return null;
 }
 
 // Generate document requirements
@@ -227,7 +292,7 @@ fastify.get("/", function (request, reply) {
 });
 
 // Generate packing list
-fastify.post("/pack", function (request, reply) {
+fastify.post("/pack", async function (request, reply) {
   const body = request.body;
 
   const trip = {
@@ -241,10 +306,31 @@ fastify.post("/pack", function (request, reply) {
     username: body.username || "",
   };
 
+  // Fetch weather forecast for the destination (non-blocking, graceful failure)
+  const weatherQuery = trip.customDestination || trip.destination.replace(/_/g, " ");
+  const weather = await getWeather(weatherQuery, trip.duration);
+  const weatherLocation = weather ? weather.location : null;
+
   // Generate all data
   let packingList = generatePackingList(trip);
-  const advice = generateAdvice(trip);
+  const advice = generateAdvice(trip, weatherLocation);
   const documents = generateDocuments(trip);
+
+  // Add weather-based packing items
+  if (weather && weather.packingItems.length > 0) {
+    const existingNames = new Set(packingList.map((i) => i.name));
+    weather.packingItems.forEach((itemName) => {
+      if (!existingNames.has(itemName)) {
+        existingNames.add(itemName);
+        packingList.push({
+          name: itemName,
+          category: "Weather-Based Items",
+          checked: false,
+        });
+      }
+    });
+  }
+
   const estimatedWeight = estimateWeight(packingList);
 
   // Add user's remembered items
@@ -284,6 +370,12 @@ fastify.post("/pack", function (request, reply) {
     ? `Estimated weight (~${estimatedWeight}kg) exceeds your limit of ${trip.maxWeight}kg. Consider removing non-essential items.`
     : null;
 
+  // Get destination info (currency, language, plug type)
+  const destinationInfo = getDestinationInfo(trip, weatherLocation);
+
+  // Build weather advice (combines weather-based + destination-specific advice)
+  const weatherAdvice = weather ? weather.advice : [];
+
   return reply.view("/src/pages/packing-list.hbs", {
     seo: seo,
     trip: trip,
@@ -294,9 +386,14 @@ fastify.post("/pack", function (request, reply) {
     overWeight: overWeight,
     weightWarning: weightWarning,
     advice: advice,
+    weatherAdvice: weatherAdvice,
     documents: documents,
     username: trip.username,
     hasUserItems: userItems.length > 0,
+    weather: weather ? weather.forecast : null,
+    weatherLocation: weatherLocation,
+    hasWeatherAdvice: weatherAdvice.length > 0,
+    destinationInfo: destinationInfo,
   });
 });
 

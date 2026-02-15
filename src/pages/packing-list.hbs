@@ -60,9 +60,38 @@
         </div>
         <p class="progress-text" id="progress-text">0 of {{totalItems}} items packed</p>
 
+        <!-- Destination Info Bar -->
+        {{#if destinationInfo}}
+        <div class="destination-info-bar">
+          <div class="dest-info-item">
+            <span class="dest-info-label">Country</span>
+            <span class="dest-info-value">{{destinationInfo.country}}</span>
+          </div>
+          <div class="dest-info-item">
+            <span class="dest-info-label">Currency</span>
+            <span class="dest-info-value">{{destinationInfo.currency}}</span>
+          </div>
+          <div class="dest-info-item">
+            <span class="dest-info-label">Language</span>
+            <span class="dest-info-value">{{destinationInfo.language}}</span>
+          </div>
+          <div class="dest-info-item">
+            <span class="dest-info-label">Plug Type</span>
+            <span class="dest-info-value">{{destinationInfo.plugType}}</span>
+          </div>
+          <div class="dest-info-item">
+            <span class="dest-info-label">Emergency</span>
+            <span class="dest-info-value">{{destinationInfo.emergency}}</span>
+          </div>
+        </div>
+        {{/if}}
+
         <!-- Tab Navigation -->
         <div class="tabs">
           <button class="tab active" data-tab="packing">Packing List</button>
+          {{#if weather}}
+          <button class="tab" data-tab="weather">Weather Forecast</button>
+          {{/if}}
           <button class="tab" data-tab="documents">Documents &amp; Papers</button>
           <button class="tab" data-tab="advice">Travel Advice</button>
         </div>
@@ -115,6 +144,75 @@
             </ul>
           </div>
         </div>
+
+        <!-- WEATHER TAB -->
+        {{#if weather}}
+        <div class="tab-content" id="tab-weather">
+          <div class="weather-section">
+            <h2>Weather Forecast
+              {{#if weatherLocation}}
+                for {{weatherLocation.name}}{{#if weatherLocation.country}}, {{weatherLocation.country}}{{/if}}
+              {{/if}}
+            </h2>
+            <p class="section-desc">{{weather.summary.totalDays}}-day forecast to help you pack the right clothes.</p>
+
+            <!-- Weather Summary -->
+            <div class="weather-summary">
+              <div class="weather-summary-stat">
+                <span class="weather-stat-value">{{weather.summary.avgHigh}}&deg;C</span>
+                <span class="weather-stat-label">Avg High</span>
+              </div>
+              <div class="weather-summary-stat">
+                <span class="weather-stat-value">{{weather.summary.avgLow}}&deg;C</span>
+                <span class="weather-stat-label">Avg Low</span>
+              </div>
+              <div class="weather-summary-stat">
+                <span class="weather-stat-value">{{weather.summary.rainyDays}}</span>
+                <span class="weather-stat-label">Rainy Days</span>
+              </div>
+              <div class="weather-summary-stat">
+                <span class="weather-stat-value">{{weather.summary.maxWind}} km/h</span>
+                <span class="weather-stat-label">Max Wind</span>
+              </div>
+            </div>
+
+            <!-- Daily Forecast -->
+            <div class="weather-grid">
+              {{#each weather.days}}
+              <div class="weather-day-card">
+                <div class="weather-day-date">{{this.date}}</div>
+                <div class="weather-day-emoji">{{this.emoji}}</div>
+                <div class="weather-day-desc">{{this.description}}</div>
+                <div class="weather-day-temps">
+                  <span class="temp-high">{{this.tempMax}}&deg;</span>
+                  <span class="temp-low">{{this.tempMin}}&deg;</span>
+                </div>
+                {{#if this.precipProb}}
+                <div class="weather-day-rain">
+                  <span class="rain-icon">&#x1F4A7;</span> {{this.precipProb}}%
+                </div>
+                {{/if}}
+              </div>
+              {{/each}}
+            </div>
+
+            <!-- Weather-Based Packing Advice -->
+            {{#if ../hasWeatherAdvice}}
+            <div class="weather-advice">
+              <h3>Weather-Based Packing Advice</h3>
+              <ul class="advice-list">
+                {{#each ../weatherAdvice}}
+                <li class="advice-item">
+                  <span class="advice-bullet weather-bullet"></span>
+                  <span>{{this}}</span>
+                </li>
+                {{/each}}
+              </ul>
+            </div>
+            {{/if}}
+          </div>
+        </div>
+        {{/if}}
 
         <!-- DOCUMENTS TAB -->
         <div class="tab-content" id="tab-documents">
