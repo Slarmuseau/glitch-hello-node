@@ -1,0 +1,210 @@
+{
+  "essentials": [
+    "Passport / ID",
+    "Wallet / Money / Cards",
+    "Phone + Charger",
+    "Medication (if applicable)",
+    "Toothbrush & Toothpaste",
+    "Deodorant",
+    "Underwear",
+    "Socks"
+  ],
+  "byObjective": {
+    "leisure": [
+      "Casual clothing",
+      "Comfortable shoes",
+      "Sunglasses",
+      "Book / E-reader",
+      "Camera",
+      "Headphones",
+      "Snacks"
+    ],
+    "business": [
+      "Formal shirts / Blouses",
+      "Suit / Blazer",
+      "Dress shoes",
+      "Laptop + Charger",
+      "Business cards",
+      "Notebook & Pen",
+      "Tie / Accessories",
+      "Iron-friendly garment bag"
+    ],
+    "adventure": [
+      "Hiking boots",
+      "Quick-dry clothing",
+      "Backpack / Daypack",
+      "Water bottle",
+      "Sunscreen (SPF 50+)",
+      "First aid kit",
+      "Multi-tool / Swiss knife",
+      "Headlamp / Flashlight",
+      "Insect repellent",
+      "Energy bars"
+    ],
+    "cultural": [
+      "Comfortable walking shoes",
+      "Guidebook / Travel guide",
+      "Camera",
+      "Modest clothing (for temples/churches)",
+      "Notebook & Pen",
+      "Portable battery pack",
+      "Language phrasebook / App"
+    ],
+    "romantic": [
+      "Nice outfits for dinner",
+      "Comfortable walking shoes",
+      "Camera",
+      "Perfume / Cologne",
+      "Gifts / Surprise items",
+      "Sunglasses",
+      "Light jacket / Shawl"
+    ]
+  },
+  "byDestination": {
+    "beach": [
+      "Swimsuit(s)",
+      "Beach towel",
+      "Sunscreen (SPF 30+)",
+      "Flip flops / Sandals",
+      "Hat / Sun hat",
+      "After-sun lotion",
+      "Waterproof phone case",
+      "Snorkel gear (optional)",
+      "Beach bag",
+      "Light cover-up"
+    ],
+    "city": [
+      "Comfortable walking shoes",
+      "City map / Offline maps",
+      "Umbrella",
+      "Light jacket",
+      "Crossbody bag / Anti-theft bag",
+      "Travel adapter",
+      "Public transit card / Cash for transit"
+    ],
+    "mountain": [
+      "Hiking boots",
+      "Thermal layers",
+      "Waterproof jacket",
+      "Warm hat & Gloves",
+      "Trekking poles (optional)",
+      "Water bottle",
+      "Trail snacks",
+      "Sunscreen (high altitude = strong UV)",
+      "First aid kit",
+      "Binoculars"
+    ],
+    "cold_climate": [
+      "Heavy winter coat",
+      "Thermal underwear",
+      "Wool sweaters / Fleece",
+      "Warm boots (waterproof)",
+      "Scarf",
+      "Warm hat / Beanie",
+      "Insulated gloves",
+      "Hand warmers",
+      "Lip balm / Moisturizer",
+      "Thick socks"
+    ],
+    "tropical": [
+      "Light, breathable clothing",
+      "Swimsuit(s)",
+      "Sunscreen (SPF 50+)",
+      "Insect repellent",
+      "Hat / Cap",
+      "Reusable water bottle",
+      "Rain jacket / Poncho",
+      "Sandals",
+      "After-sun / Aloe vera",
+      "Anti-diarrhea medication"
+    ],
+    "countryside": [
+      "Comfortable outdoor clothing",
+      "Walking shoes / Boots",
+      "Raincoat",
+      "Binoculars",
+      "Picnic supplies",
+      "Camera",
+      "Warm layers",
+      "Insect repellent",
+      "Sun hat"
+    ]
+  },
+  "byTransport": {
+    "plane": [
+      "Travel pillow",
+      "Eye mask & Earplugs",
+      "Compression socks (long flights)",
+      "Entertainment (tablet/book)",
+      "Liquids in clear bag (100ml max)",
+      "Printed boarding pass / Mobile boarding pass",
+      "Luggage tags",
+      "Portable charger (carry-on only)"
+    ],
+    "car": [
+      "Driving license",
+      "Car documents / Insurance",
+      "Phone car mount",
+      "Snacks & Drinks for the road",
+      "Road maps / GPS",
+      "Roadside emergency kit",
+      "Sunglasses",
+      "Pillow / Blanket for passengers"
+    ],
+    "train": [
+      "Train tickets / Rail pass",
+      "Neck pillow",
+      "Book / Entertainment",
+      "Snacks & Water",
+      "Eye mask",
+      "Light blanket / Scarf",
+      "Portable charger"
+    ],
+    "bus": [
+      "Bus tickets",
+      "Neck pillow",
+      "Snacks & Water",
+      "Entertainment (book/tablet)",
+      "Motion sickness tablets",
+      "Eye mask & Earplugs",
+      "Small blanket"
+    ],
+    "boat": [
+      "Motion sickness medication",
+      "Waterproof bag / Dry bag",
+      "Sunscreen",
+      "Light layers (wind on deck)",
+      "Non-slip shoes",
+      "Binoculars",
+      "Waterproof phone case"
+    ]
+  },
+  "byDuration": {
+    "short": {
+      "label": "1-3 days",
+      "clothingMultiplier": 1,
+      "extras": []
+    },
+    "medium": {
+      "label": "4-7 days",
+      "clothingMultiplier": 1.5,
+      "extras": [
+        "Laundry bag",
+        "Extra pair of shoes",
+        "Travel-size detergent"
+      ]
+    },
+    "long": {
+      "label": "8+ days",
+      "clothingMultiplier": 2,
+      "extras": [
+        "Laundry bag",
+        "Travel-size laundry detergent",
+        "Extra shoes",
+        "Sewing kit",
+        "Stain remover pen",
+        "Packing cubes"
+      ]
+    }
+  }
+}

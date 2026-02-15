@@ -1,0 +1,112 @@
+{
+  "always": [
+    {
+      "name": "Valid ID / Passport",
+      "description": "Ensure your passport is valid for at least 6 months beyond your travel dates. Many countries require this.",
+      "icon": "passport"
+    },
+    {
+      "name": "Travel Insurance Policy",
+      "description": "Highly recommended for all trips. Covers medical emergencies, trip cancellation, lost luggage, and more.",
+      "icon": "insurance"
+    },
+    {
+      "name": "Booking Confirmations",
+      "description": "Print or save digital copies of hotel, flight, train, and activity bookings.",
+      "icon": "booking"
+    },
+    {
+      "name": "Emergency Contact List",
+      "description": "Written list of emergency contacts, embassy numbers, and local emergency services (police, ambulance).",
+      "icon": "emergency"
+    }
+  ],
+  "international": [
+    {
+      "name": "Valid Passport",
+      "description": "Required for all international travel. Check validity -- many countries require 6+ months remaining.",
+      "icon": "passport"
+    },
+    {
+      "name": "Visa (if required)",
+      "description": "Check visa requirements for your destination. Some countries offer visa-on-arrival or e-visas. Apply well in advance.",
+      "icon": "visa"
+    },
+    {
+      "name": "Vaccination Certificate",
+      "description": "Some countries require proof of vaccinations (Yellow Fever, COVID-19, etc.). Check WHO and destination requirements.",
+      "icon": "health"
+    },
+    {
+      "name": "International Driving Permit",
+      "description": "Required if you plan to rent a car abroad. Obtain one from your local automobile association before departure.",
+      "icon": "driving"
+    },
+    {
+      "name": "Travel Insurance (International)",
+      "description": "Essential for international travel. Ensure it covers medical evacuation, especially for remote destinations.",
+      "icon": "insurance"
+    },
+    {
+      "name": "Foreign Currency / Travel Cards",
+      "description": "Bring some local currency for arrival. Consider a travel card with low foreign transaction fees.",
+      "icon": "money"
+    },
+    {
+      "name": "Customs Declaration Forms",
+      "description": "Some countries require you to declare items at customs. Be aware of duty-free allowances.",
+      "icon": "customs"
+    },
+    {
+      "name": "Embassy Registration",
+      "description": "Register with your embassy or consulate at your destination. Useful in case of emergency or natural disaster.",
+      "icon": "embassy"
+    }
+  ],
+  "domestic": [
+    {
+      "name": "Valid ID (National ID / Driver's License)",
+      "description": "Carry government-issued photo ID for check-ins, car rentals, and age-restricted venues.",
+      "icon": "id"
+    },
+    {
+      "name": "Health Insurance Card",
+      "description": "Bring your health insurance card or details. Check if your plan covers you in other regions/states.",
+      "icon": "health"
+    },
+    {
+      "name": "Driver's License",
+      "description": "Required if you plan to drive or rent a car.",
+      "icon": "driving"
+    }
+  ],
+  "byTransport": {
+    "plane": [
+      "Boarding pass (printed or digital)",
+      "Airline loyalty card / Frequent flyer number",
+      "TSA PreCheck / Global Entry card (if applicable)",
+      "Luggage receipts after check-in"
+    ],
+    "car": [
+      "Driver's license",
+      "Vehicle registration documents",
+      "Car insurance documents",
+      "Roadside assistance membership card",
+      "International Driving Permit (if abroad)"
+    ],
+    "train": [
+      "Train tickets / Rail pass",
+      "Seat reservation confirmations",
+      "Student / Senior discount card (if applicable)"
+    ],
+    "bus": [
+      "Bus tickets / Pass",
+      "Photo ID (some services require it)"
+    ],
+    "boat": [
+      "Cruise tickets / Ferry booking confirmation",
+      "Passport (for international waters)",
+      "Boarding card"
+    ]
+  }
+}

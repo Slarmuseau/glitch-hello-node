@@ -1,0 +1,125 @@
+{
+  "general": [
+    "Always keep digital and physical copies of important documents (passport, insurance, bookings).",
+    "Notify your bank about your travel dates to avoid card blocks abroad.",
+    "Register with your country's embassy if traveling to a high-risk area.",
+    "Learn a few basic phrases in the local language -- locals appreciate the effort.",
+    "Keep emergency contacts written down, not just saved on your phone.",
+    "Take a photo of your luggage contents in case you need to file a lost baggage claim.",
+    "Arrive at the airport at least 2 hours before domestic and 3 hours before international flights.",
+    "Always carry a small first aid kit with basics: plasters, painkillers, antiseptic.",
+    "Check your phone plan for roaming charges or buy a local SIM / eSIM.",
+    "Share your itinerary with a trusted friend or family member."
+  ],
+  "byDestination": {
+    "beach": [
+      "Reapply sunscreen every 2 hours, especially after swimming.",
+      "Stay hydrated -- heat and sun dehydrate you faster than you realize.",
+      "Watch out for strong currents. Always swim near lifeguard stations.",
+      "Wear reef-safe sunscreen to protect marine ecosystems.",
+      "Keep valuables locked up or in a waterproof pouch when at the beach."
+    ],
+    "city": [
+      "Wear your bag in front of you in crowded areas to deter pickpockets.",
+      "Use official taxis or ride-share apps rather than unmarked vehicles.",
+      "Research free walking tours -- they're a great way to learn about a city.",
+      "Many museums offer free or discounted entry on certain days.",
+      "Keep a city map offline on your phone in case you lose signal."
+    ],
+    "mountain": [
+      "Acclimatize gradually to higher altitudes to avoid altitude sickness.",
+      "Always tell someone your hiking route and expected return time.",
+      "Bring more water than you think you need.",
+      "Weather in mountains changes rapidly -- carry layers and rain protection.",
+      "Stick to marked trails and carry a physical map as backup."
+    ],
+    "cold_climate": [
+      "Dress in layers: base layer (moisture-wicking), mid layer (insulation), outer layer (wind/waterproof).",
+      "Protect extremities -- most heat is lost from head, hands, and feet.",
+      "Keep electronics close to your body; cold drains batteries fast.",
+      "Eat calorie-rich foods to maintain body heat.",
+      "Watch for signs of frostbite: numbness, white/grayish skin patches."
+    ],
+    "tropical": [
+      "Use DEET-based insect repellent to protect against mosquito-borne diseases.",
+      "Drink only bottled or purified water.",
+      "Be cautious with street food -- eat at busy stalls where food turnover is high.",
+      "Wear light, long-sleeved clothing in the evenings to avoid mosquito bites.",
+      "Check for required or recommended vaccinations well in advance."
+    ],
+    "countryside": [
+      "Respect local wildlife and do not feed wild animals.",
+      "Close gates behind you when walking through farmland.",
+      "Check weather forecasts before heading out for long walks.",
+      "Bring cash as rural areas may have limited card acceptance.",
+      "Be aware of hunting seasons if exploring forests."
+    ]
+  },
+  "byTransport": {
+    "plane": [
+      "Stay hydrated on flights -- cabin air is very dry.",
+      "Move around every 2 hours on long flights to prevent deep vein thrombosis (DVT).",
+      "Pack a change of clothes in your carry-on in case checked luggage is delayed.",
+      "Arrive early to allow time for security and unexpected delays.",
+      "Check airline baggage weight and size limits before packing."
+    ],
+    "car": [
+      "Plan rest stops every 2 hours to avoid driver fatigue.",
+      "Check tire pressure, oil, and coolant before a long drive.",
+      "Research toll roads and have cash or a toll device ready.",
+      "Download offline maps for areas with poor cell coverage.",
+      "Carry a basic roadside emergency kit."
+    ],
+    "train": [
+      "Book window seats for scenic routes.",
+      "Keep valuables close when sleeping on overnight trains.",
+      "Validate tickets before boarding where required (common in Europe).",
+      "Bring your own food and water for longer journeys.",
+      "Check if your rail pass covers seat reservations or if they're separate."
+    ],
+    "bus": [
+      "Bring entertainment -- bus journeys can be long and repetitive.",
+      "Take motion sickness tablets before boarding if you're prone to travel sickness.",
+      "Keep valuables in a small bag on your lap, not in overhead storage.",
+      "Wear comfortable layers as bus temperatures can vary."
+    ],
+    "boat": [
+      "Take motion sickness medication 30 minutes before boarding.",
+      "Focus on the horizon if you feel seasick.",
+      "Secure loose items in your cabin -- boats move a lot.",
+      "Apply sunscreen generously when on deck -- water reflects UV rays."
+    ]
+  },
+  "byObjective": {
+    "leisure": [
+      "Don't over-plan -- leave room for spontaneous discoveries.",
+      "Set a daily budget to avoid overspending on holiday.",
+      "Try local restaurants rather than tourist-trap eateries.",
+      "Take a rest day if you're traveling for more than a week."
+    ],
+    "business": [
+      "Research local business etiquette (greeting customs, gift-giving, punctuality).",
+      "Bring a universal power adapter for your devices.",
+      "Keep a portable steamer or iron to keep clothes crisp.",
+      "Schedule meetings accounting for jet lag -- give yourself a buffer day."
+    ],
+    "adventure": [
+      "Always check weather conditions before outdoor activities.",
+      "Book reputable guides and operators for extreme activities.",
+      "Make sure your travel insurance covers adventure sports.",
+      "Start with easier trails/activities and build up to challenging ones."
+    ],
+    "cultural": [
+      "Research dress codes for religious sites before visiting.",
+      "Ask permission before photographing locals or sacred sites.",
+      "Support local artisans by buying handmade souvenirs.",
+      "Hire local guides for deeper cultural insights."
+    ],
+    "romantic": [
+      "Book at least one special restaurant in advance.",
+      "Plan a mix of activities and relaxation time together.",
+      "Surprise your partner with a small, thoughtful gesture during the trip.",
+      "Disconnect from screens and enjoy quality time."
+    ]
+  }
+}

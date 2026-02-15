@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="https://cdn.glitch.global/fd139a45-8545-4085-b451-832663448246/suitcase.png?v=1739611392498" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Your Packing List - Holiday Packing App</title>
+    <meta name="description" content="Your personalized packing list with travel advice and document checklist." />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="header-content">
+          <h1 class="app-title">Your Packing List</h1>
+          <p class="app-subtitle">
+            {{capitalize trip.objective}} trip to
+            {{#if trip.customDestination}}
+              {{trip.customDestination}}
+            {{else}}
+              a {{capitalize trip.destination}} destination
+            {{/if}}
+            &mdash; {{trip.duration}} day(s) by {{capitalize trip.transport}}
+          </p>
+          <a href="/" class="btn btn-outline btn-back">Plan Another Trip</a>
+        </div>
+      </header>
+
+      <main class="main-content list-page">
+        <!-- Trip Summary Bar -->
+        <div class="trip-summary">
+          <div class="summary-stat">
+            <span class="stat-value">{{totalItems}}</span>
+            <span class="stat-label">Items</span>
+          </div>
+          <div class="summary-stat">
+            <span class="stat-value">~{{estimatedWeight}}kg</span>
+            <span class="stat-label">Est. Weight</span>
+          </div>
+          <div class="summary-stat">
+            <span class="stat-value">{{maxWeight}}kg</span>
+            <span class="stat-label">Max Weight</span>
+          </div>
+          <div class="summary-stat">
+            <span class="stat-value" id="progress-count">0</span>
+            <span class="stat-label">Packed</span>
+          </div>
+        </div>
+
+        {{#if weightWarning}}
+        <div class="alert alert-warning">
+          <strong>Weight Warning:</strong> {{weightWarning}}
+        </div>
+        {{/if}}
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+          <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+        </div>
+        <p class="progress-text" id="progress-text">0 of {{totalItems}} items packed</p>
+
+        <!-- Tab Navigation -->
+        <div class="tabs">
+          <button class="tab active" data-tab="packing">Packing List</button>
+          <button class="tab" data-tab="documents">Documents &amp; Papers</button>
+          <button class="tab" data-tab="advice">Travel Advice</button>
+        </div>
+
+        <!-- PACKING LIST TAB -->
+        <div class="tab-content active" id="tab-packing">
+          <!-- Add Custom Item -->
+          <div class="add-item-section">
+            <h3>Add Your Own Item</h3>
+            <div class="add-item-form">
+              <input type="text" id="custom-item-input" placeholder="e.g. Guitar, Yoga mat..." />
+              <button type="button" class="btn btn-primary" id="add-item-btn">Add Item</button>
+            </div>
+            {{#if username}}
+            <p class="save-hint">Items you add will be remembered for your future trips, <strong>{{username}}</strong>.</p>
+            {{else}}
+            <p class="save-hint">Enter your name on the home page to save custom items for future trips.</p>
+            {{/if}}
+          </div>
+
+          <!-- Packing Categories -->
+          {{#each categories}}
+          <div class="category-section">
+            <div class="category-header">
+              <h3 class="category-title">{{this.name}}</h3>
+              <span class="category-count"><span class="cat-checked" data-category="{{this.name}}">0</span>/{{this.items.length}}</span>
+            </div>
+            <ul class="packing-list">
+              {{#each this.items}}
+              <li class="packing-item" data-category="{{../name}}">
+                <label class="check-label">
+                  <input type="checkbox" class="item-check" />
+                  <span class="checkmark"></span>
+                  <span class="item-name">{{this.name}}</span>
+                </label>
+                <button class="btn-remove" title="Remove item" aria-label="Remove {{this.name}}">&times;</button>
+              </li>
+              {{/each}}
+            </ul>
+          </div>
+          {{/each}}
+
+          <!-- Custom items container (dynamically added) -->
+          <div class="category-section" id="custom-items-section" style="display:none;">
+            <div class="category-header">
+              <h3 class="category-title">Custom Items</h3>
+              <span class="category-count"><span class="cat-checked" data-category="Custom Items">0</span>/<span id="custom-items-total">0</span></span>
+            </div>
+            <ul class="packing-list" id="custom-items-list">
+            </ul>
+          </div>
+        </div>
+
+        <!-- DOCUMENTS TAB -->
+        <div class="tab-content" id="tab-documents">
+          <div class="documents-section">
+            <h2>Required Documents &amp; Papers</h2>
+            <p class="section-desc">Make sure you have these documents ready before your trip. Check them off as you prepare them.</p>
+            <ul class="documents-list">
+              {{#each documents}}
+              <li class="document-item">
+                <label class="check-label">
+                  <input type="checkbox" class="doc-check" />
+                  <span class="checkmark"></span>
+                  <span class="doc-info">
+                    <strong class="doc-name">{{this.name}}</strong>
+                    {{#if this.description}}
+                    <span class="doc-desc">{{this.description}}</span>
+                    {{/if}}
+                  </span>
+                </label>
+              </li>
+              {{/each}}
+            </ul>
+          </div>
+        </div>
+
+        <!-- ADVICE TAB -->
+        <div class="tab-content" id="tab-advice">
+          <div class="advice-section">
+            <h2>Travel Advice &amp; Tips</h2>
+            <p class="section-desc">Personalized tips based on your destination, transport, and trip type.</p>
+            <ul class="advice-list">
+              {{#each advice}}
+              <li class="advice-item">
+                <span class="advice-bullet"></span>
+                <span>{{this}}</span>
+              </li>
+              {{/each}}
+            </ul>
+          </div>
+        </div>
+      </main>
+
+      <footer class="app-footer">
+        <p>Holiday Packing App &mdash; Pack smart, travel happy.</p>
+      </footer>
+    </div>
+
+    <script>
+      // Store username for API calls
+      var USERNAME = "{{username}}";
+      var TOTAL_ITEMS = {{totalItems}};
+    </script>
+    <script src="/app.js"></script>
+  </body>
+</html>
