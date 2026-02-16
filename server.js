@@ -1,5 +1,5 @@
 /**
- * Holiday Packing App - Server
+ * TravelReady - Server
  * Built with Fastify + Handlebars
  */
 
@@ -726,6 +726,6 @@ fastify.listen(
       console.error(err);
       process.exit(1);
     }
-    console.log(`Holiday Packing App is listening on ${address}`);
+    console.log(`TravelReady is listening on ${address}`);
   }
 );

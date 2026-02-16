@@ -1,7 +1,7 @@
 {
   "name": "glitch-hello-node",
   "version": "0.1.0",
-  "description": "A simple Node app built on fastify, instantly up and running. Built to be remixed on Glitch.com.",
+  "description": "TravelReady - Smart trip preparation app with packing lists, weather forecasts, visa requirements, and destination advice.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

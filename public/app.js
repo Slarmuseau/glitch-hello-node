@@ -1,5 +1,5 @@
 /**
- * Holiday Packing App - Client-side JavaScript
+ * TravelReady - Client-side JavaScript
  * Handles checklist interactions, adding items, tab switching, and progress tracking.
  */
 

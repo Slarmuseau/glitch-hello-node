@@ -1,6 +1,6 @@
 {
-  "title": "Holiday Packing App",
-  "description": "Smart holiday packing assistant. Get a personalized packing list based on your destination, transport, and trip type. Never forget an essential item again!",
+  "title": "TravelReady",
+  "description": "Everything you need before you go. Smart packing lists, weather forecasts, visa requirements, plug adapters, and destination-specific travel advice -- all tailored to your exact route.",
   "url": "glitch-default",
   "image": "https://cdn.glitch.com/605e2a51-d45f-4d87-a285-9410ad350515%2Fhello-node-social.png?v=1618161394375"
 }
