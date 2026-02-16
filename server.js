@@ -275,6 +275,77 @@ function estimateWeight(items) {
   return Math.round(total * 10) / 10;
 }
 
+// Detect suggested activities based on weather + destination
+function detectSuggestedActivities(trip, weather) {
+  const suggestions = [];
+  const userObjective = trip.objective;
+  const destination = trip.destination;
+  const weatherData = weather ? weather.forecast : null;
+  const summary = weatherData ? weatherData.summary : null;
+
+  // Skiing: cold temps + mountain destination, or snow in forecast
+  if (userObjective !== "skiing") {
+    const hasSnow = weatherData && weatherData.days.some((d) => d.icon === "snow");
+    const isColdMountain = destination === "mountain" && summary && summary.avgHigh < 5;
+    const isColdClimate = destination === "cold_climate" && summary && summary.avgHigh < 5;
+    if (hasSnow || isColdMountain || isColdClimate) {
+      suggestions.push({
+        activity: "skiing",
+        label: "Skiing / Winter Sports",
+        reason: hasSnow
+          ? "Snow is in the forecast -- looks like a great time for skiing!"
+          : "Cold mountain conditions detected -- you might want skiing gear.",
+      });
+    }
+  }
+
+  // Water sports: warm + beach/coastal/tropical
+  if (userObjective !== "water_sports") {
+    const isWarmCoastal =
+      (destination === "beach" || destination === "tropical") &&
+      (!summary || summary.avgHigh > 20);
+    if (isWarmCoastal) {
+      suggestions.push({
+        activity: "water_sports",
+        label: "Water Sports",
+        reason: "Warm coastal destination -- perfect conditions for water activities!",
+      });
+    }
+  }
+
+  // Hiking: mountain/countryside + moderate or warm temps
+  if (userObjective !== "hiking") {
+    const isHikingTerrain = destination === "mountain" || destination === "countryside";
+    const notFreezing = !summary || summary.avgHigh > 5;
+    if (isHikingTerrain && notFreezing) {
+      suggestions.push({
+        activity: "hiking",
+        label: "Hiking",
+        reason:
+          destination === "mountain"
+            ? "Mountain destination with good conditions -- hiking gear recommended!"
+            : "Countryside destination -- great for hiking and long walks!",
+      });
+    }
+  }
+
+  // Cycling: city/countryside + dry + moderate temps
+  if (userObjective !== "cycling") {
+    const isCycleFriendly = destination === "city" || destination === "countryside";
+    const isDry = !summary || summary.rainyDays <= 2;
+    const isModerate = !summary || (summary.avgHigh > 10 && summary.avgHigh < 35);
+    if (isCycleFriendly && isDry && isModerate) {
+      suggestions.push({
+        activity: "cycling",
+        label: "Cycling",
+        reason: "Dry conditions and pleasant temperatures -- ideal for cycling!",
+      });
+    }
+  }
+
+  return suggestions;
+}
+
 // ============ ROUTES ============
 
 // Home page - trip setup form
@@ -311,17 +382,45 @@ fastify.post("/pack", async function (request, reply) {
   const weather = await getWeather(weatherQuery, trip.duration);
   const weatherLocation = weather ? weather.location : null;
 
+  // Detect suggested activities based on weather + destination
+  const suggestedActivities = detectSuggestedActivities(trip, weather);
+
   // Generate all data
   let packingList = generatePackingList(trip);
   const advice = generateAdvice(trip, weatherLocation);
   const documents = generateDocuments(trip);
 
+  // Add suggested activity items alongside the user's chosen trip type
+  const addedItems = new Set(packingList.map((i) => i.name));
+  suggestedActivities.forEach((suggestion) => {
+    const activityItems = packingData.byObjective[suggestion.activity];
+    if (activityItems) {
+      activityItems.forEach((itemName) => {
+        if (!addedItems.has(itemName)) {
+          addedItems.add(itemName);
+          packingList.push({
+            name: itemName,
+            category: "Suggested: " + suggestion.label,
+            checked: false,
+          });
+        }
+      });
+    }
+    // Also add advice for the suggested activity
+    if (travelAdvice.byObjective[suggestion.activity]) {
+      travelAdvice.byObjective[suggestion.activity].forEach((tip) => {
+        if (!advice.includes(tip)) {
+          advice.push(tip);
+        }
+      });
+    }
+  });
+
   // Add weather-based packing items
   if (weather && weather.packingItems.length > 0) {
-    const existingNames = new Set(packingList.map((i) => i.name));
     weather.packingItems.forEach((itemName) => {
-      if (!existingNames.has(itemName)) {
-        existingNames.add(itemName);
+      if (!addedItems.has(itemName)) {
+        addedItems.add(itemName);
         packingList.push({
           name: itemName,
           category: "Weather-Based Items",
@@ -394,6 +493,8 @@ fastify.post("/pack", async function (request, reply) {
     weatherLocation: weatherLocation,
     hasWeatherAdvice: weatherAdvice.length > 0,
     destinationInfo: destinationInfo,
+    suggestedActivities: suggestedActivities,
+    hasSuggestions: suggestedActivities.length > 0,
   });
 });
 

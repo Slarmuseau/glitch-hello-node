@@ -667,6 +667,48 @@ body {
 }
 
 /* ============================================
+   Activity Suggestions Banner
+   ============================================ */
+
+.suggestions-banner {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1px solid #fbbf24;
+  border-left: 4px solid #f59e0b;
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.suggestions-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #92400e;
+  margin-bottom: 0.25rem;
+}
+
+.suggestions-intro {
+  font-size: 0.85rem;
+  color: #78350f;
+  margin-bottom: 0.75rem;
+}
+
+.suggestion-item {
+  font-size: 0.9rem;
+  color: #78350f;
+  padding: 0.4rem 0;
+  padding-left: 1rem;
+  border-left: 2px solid #f59e0b;
+  margin-bottom: 0.4rem;
+}
+
+.suggestions-note {
+  font-size: 0.8rem;
+  color: #92400e;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+/* ============================================
    Prominent Input
    ============================================ */
 

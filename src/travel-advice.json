@@ -120,6 +120,42 @@
       "Plan a mix of activities and relaxation time together.",
       "Surprise your partner with a small, thoughtful gesture during the trip.",
       "Disconnect from screens and enjoy quality time."
+    ],
+    "cycling": [
+      "Always wear a helmet, even on short rides or quiet roads.",
+      "Check your bike thoroughly before each ride: brakes, tires, gears, chain.",
+      "Ride with traffic and obey local road rules -- they vary by country.",
+      "Stay visible: wear bright colors during the day and reflective gear at dusk.",
+      "Eat and drink before you feel hungry or thirsty -- bonking ruins rides.",
+      "Plan your route with elevation in mind. Check for dedicated cycle paths.",
+      "Carry ID, emergency contact info, and some cash on every ride."
+    ],
+    "hiking": [
+      "Break in new boots before your trip -- blisters can ruin a hike.",
+      "Start with shorter trails and build up. Know your fitness level.",
+      "Always tell someone your planned route and expected return time.",
+      "Pack the 10 essentials: navigation, sun protection, insulation, first aid, knife, fire, shelter, food, water, light.",
+      "Leave no trace: pack out everything you bring in, stay on marked trails.",
+      "Start early to avoid afternoon heat, storms, and crowds.",
+      "Turn back if conditions deteriorate -- the mountain will always be there tomorrow."
+    ],
+    "skiing": [
+      "Book ski lessons if you're a beginner -- it saves time and prevents bad habits.",
+      "Always warm up before your first run of the day to prevent injuries.",
+      "Stay hydrated and eat well -- skiing at altitude burns enormous calories.",
+      "Apply sunscreen every 2 hours, even on cloudy days. Snow reflects 80% of UV rays.",
+      "Know the ski area's difficulty ratings: green (easy), blue (intermediate), red (advanced), black (expert).",
+      "Check avalanche reports daily if you plan to go off-piste.",
+      "Stop skiing when you're tired -- most accidents happen on the last run of the day."
+    ],
+    "water_sports": [
+      "Never go in the water alone. Always have a buddy or inform someone onshore.",
+      "Check tide times, currents, and local conditions before entering the water.",
+      "Wear reef-safe sunscreen to protect marine ecosystems and coral.",
+      "Rinse all equipment with fresh water after saltwater use to prevent damage.",
+      "If you're new to a water sport, book a lesson with a certified instructor.",
+      "Know the local flag system: red = danger, yellow = caution, green = safe.",
+      "Protect against jellyfish and sea urchins with protective clothing and water shoes."
     ]
   }
 }

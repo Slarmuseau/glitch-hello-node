@@ -96,6 +96,20 @@
           <button class="tab" data-tab="advice">Travel Advice</button>
         </div>
 
+        <!-- Activity Suggestions -->
+        {{#if hasSuggestions}}
+        <div class="suggestions-banner">
+          <h3 class="suggestions-title">Activity Suggestions</h3>
+          <p class="suggestions-intro">Based on your destination and weather, we've added gear for these activities:</p>
+          {{#each suggestedActivities}}
+          <div class="suggestion-item">
+            <strong>{{this.label}}</strong> &mdash; {{this.reason}}
+          </div>
+          {{/each}}
+          <p class="suggestions-note">Scroll down in the packing list to see the suggested items. Remove any you don't need.</p>
+        </div>
+        {{/if}}
+
         <!-- PACKING LIST TAB -->
         <div class="tab-content active" id="tab-packing">
           <!-- Add Custom Item -->
