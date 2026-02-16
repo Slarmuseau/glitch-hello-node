@@ -1,0 +1,416 @@
+{
+  "countries": {
+    "belgium": {
+      "label": "Belgium",
+      "plugType": "C/E",
+      "visaGroup": "eu",
+      "drivingSide": "right",
+      "currency": "EUR"
+    },
+    "netherlands": {
+      "label": "Netherlands",
+      "plugType": "C/F",
+      "visaGroup": "eu",
+      "drivingSide": "right",
+      "currency": "EUR"
+    },
+    "france": {
+      "label": "France",
+      "plugType": "C/E",
+      "visaGroup": "eu",
+      "drivingSide": "right",
+      "currency": "EUR"
+    },
+    "germany": {
+      "label": "Germany",
+      "plugType": "C/F",
+      "visaGroup": "eu",
+      "drivingSide": "right",
+      "currency": "EUR"
+    },
+    "spain": {
+      "label": "Spain",
+      "plugType": "C/F",
+      "visaGroup": "eu",
+      "drivingSide": "right",
+      "currency": "EUR"
+    },
+    "italy": {
+      "label": "Italy",
+      "plugType": "C/F/L",
+      "visaGroup": "eu",
+      "drivingSide": "right",
+      "currency": "EUR"
+    },
+    "portugal": {
+      "label": "Portugal",
+      "plugType": "C/F",
+      "visaGroup": "eu",
+      "drivingSide": "right",
+      "currency": "EUR"
+    },
+    "austria": {
+      "label": "Austria",
+      "plugType": "C/F",
+      "visaGroup": "eu",
+      "drivingSide": "right",
+      "currency": "EUR"
+    },
+    "greece": {
+      "label": "Greece",
+      "plugType": "C/F",
+      "visaGroup": "eu",
+      "drivingSide": "right",
+      "currency": "EUR"
+    },
+    "ireland": {
+      "label": "Ireland",
+      "plugType": "G",
+      "visaGroup": "eu",
+      "drivingSide": "left",
+      "currency": "EUR"
+    },
+    "croatia": {
+      "label": "Croatia",
+      "plugType": "C/F",
+      "visaGroup": "eu",
+      "drivingSide": "right",
+      "currency": "EUR"
+    },
+    "sweden": {
+      "label": "Sweden",
+      "plugType": "C/F",
+      "visaGroup": "eu",
+      "drivingSide": "right",
+      "currency": "SEK"
+    },
+    "denmark": {
+      "label": "Denmark",
+      "plugType": "C/E/F/K",
+      "visaGroup": "eu",
+      "drivingSide": "right",
+      "currency": "DKK"
+    },
+    "finland": {
+      "label": "Finland",
+      "plugType": "C/F",
+      "visaGroup": "eu",
+      "drivingSide": "right",
+      "currency": "EUR"
+    },
+    "poland": {
+      "label": "Poland",
+      "plugType": "C/E",
+      "visaGroup": "eu",
+      "drivingSide": "right",
+      "currency": "PLN"
+    },
+    "czech_republic": {
+      "label": "Czech Republic",
+      "plugType": "C/E",
+      "visaGroup": "eu",
+      "drivingSide": "right",
+      "currency": "CZK"
+    },
+    "hungary": {
+      "label": "Hungary",
+      "plugType": "C/F",
+      "visaGroup": "eu",
+      "drivingSide": "right",
+      "currency": "HUF"
+    },
+    "romania": {
+      "label": "Romania",
+      "plugType": "C/F",
+      "visaGroup": "eu",
+      "drivingSide": "right",
+      "currency": "RON"
+    },
+    "luxembourg": {
+      "label": "Luxembourg",
+      "plugType": "C/F",
+      "visaGroup": "eu",
+      "drivingSide": "right",
+      "currency": "EUR"
+    },
+    "switzerland": {
+      "label": "Switzerland",
+      "plugType": "C/J",
+      "visaGroup": "schengen",
+      "drivingSide": "right",
+      "currency": "CHF"
+    },
+    "norway": {
+      "label": "Norway",
+      "plugType": "C/F",
+      "visaGroup": "schengen",
+      "drivingSide": "right",
+      "currency": "NOK"
+    },
+    "iceland": {
+      "label": "Iceland",
+      "plugType": "C/F",
+      "visaGroup": "schengen",
+      "drivingSide": "right",
+      "currency": "ISK"
+    },
+    "united_kingdom": {
+      "label": "United Kingdom",
+      "plugType": "G",
+      "visaGroup": "uk",
+      "drivingSide": "left",
+      "currency": "GBP"
+    },
+    "united_states": {
+      "label": "United States",
+      "plugType": "A/B",
+      "visaGroup": "us",
+      "drivingSide": "right",
+      "currency": "USD"
+    },
+    "canada": {
+      "label": "Canada",
+      "plugType": "A/B",
+      "visaGroup": "canada",
+      "drivingSide": "right",
+      "currency": "CAD"
+    },
+    "australia": {
+      "label": "Australia",
+      "plugType": "I",
+      "visaGroup": "australia",
+      "drivingSide": "left",
+      "currency": "AUD"
+    },
+    "new_zealand": {
+      "label": "New Zealand",
+      "plugType": "I",
+      "visaGroup": "nz",
+      "drivingSide": "left",
+      "currency": "NZD"
+    },
+    "japan": {
+      "label": "Japan",
+      "plugType": "A/B",
+      "visaGroup": "japan",
+      "drivingSide": "left",
+      "currency": "JPY"
+    },
+    "south_korea": {
+      "label": "South Korea",
+      "plugType": "C/F",
+      "visaGroup": "skorea",
+      "drivingSide": "right",
+      "currency": "KRW"
+    },
+    "brazil": {
+      "label": "Brazil",
+      "plugType": "N",
+      "visaGroup": "brazil",
+      "drivingSide": "right",
+      "currency": "BRL"
+    },
+    "south_africa": {
+      "label": "South Africa",
+      "plugType": "C/M/N",
+      "visaGroup": "south_africa",
+      "drivingSide": "left",
+      "currency": "ZAR"
+    },
+    "india": {
+      "label": "India",
+      "plugType": "C/D/M",
+      "visaGroup": "india",
+      "drivingSide": "left",
+      "currency": "INR"
+    },
+    "mexico": {
+      "label": "Mexico",
+      "plugType": "A/B",
+      "visaGroup": "mexico",
+      "drivingSide": "right",
+      "currency": "MXN"
+    }
+  },
+  "entryRequirements": {
+    "eu_to_eu": {
+      "documents": [
+        {"name": "National ID Card", "description": "Valid national ID card is sufficient for travel within the EU. No passport required.", "icon": "id"},
+        {"name": "European Health Insurance Card (EHIC)", "description": "Provides access to state healthcare in EU/EEA countries. Free to obtain.", "icon": "health"}
+      ],
+      "notes": [
+        "No visa required -- freedom of movement within the EU.",
+        "No border controls within the Schengen Area.",
+        "Your national ID card is sufficient, but carrying a passport is recommended as backup.",
+        "EHIC/GHIC covers emergency healthcare, but travel insurance is still recommended."
+      ],
+      "visaRequired": false
+    },
+    "eu_to_schengen": {
+      "documents": [
+        {"name": "National ID Card or Passport", "description": "Either is accepted for Schengen area travel.", "icon": "id"},
+        {"name": "European Health Insurance Card (EHIC)", "description": "Valid in EEA countries including Switzerland, Norway, Iceland.", "icon": "health"}
+      ],
+      "notes": [
+        "No visa required for EU citizens in Schengen-associated countries.",
+        "No border controls within the Schengen Area.",
+        "Switzerland, Norway, and Iceland are in Schengen but not the EU."
+      ],
+      "visaRequired": false
+    },
+    "eu_to_uk": {
+      "documents": [
+        {"name": "Valid Passport", "description": "A passport is required since Brexit. National ID cards are no longer accepted.", "icon": "passport"},
+        {"name": "Travel Insurance", "description": "EHIC is no longer valid in the UK post-Brexit. Get travel insurance with medical cover.", "icon": "insurance"}
+      ],
+      "notes": [
+        "No visa required for stays up to 6 months (tourism/business).",
+        "Passport must be valid for the duration of your stay.",
+        "Since Brexit, an ID card alone is NOT sufficient. You MUST have a passport.",
+        "EHIC is no longer valid in the UK. Arrange travel insurance with medical coverage.",
+        "UK uses pounds sterling (GBP), not euros."
+      ],
+      "visaRequired": false
+    },
+    "eu_to_us": {
+      "documents": [
+        {"name": "Valid Passport", "description": "Must be valid for at least 6 months beyond your planned stay.", "icon": "passport"},
+        {"name": "ESTA (Electronic System for Travel Authorization)", "description": "Required for visa-free entry. Apply at least 72 hours before departure. Costs $21, valid for 2 years.", "icon": "visa"},
+        {"name": "Return/Onward Ticket", "description": "Proof of onward travel may be requested at immigration.", "icon": "ticket"},
+        {"name": "Travel Insurance with US Medical Cover", "description": "US healthcare is extremely expensive. Ensure your policy covers medical emergencies.", "icon": "insurance"}
+      ],
+      "notes": [
+        "ESTA is required -- apply online at least 72 hours before departure (esta.cbp.dhs.gov).",
+        "Passport must be valid for 6 months beyond your stay.",
+        "US healthcare costs are astronomical. Travel insurance with medical cover is essential, not optional.",
+        "Customs: declare food items, over $10,000 cash, and certain goods on arrival.",
+        "TSA PreCheck is not available for foreign visitors. Allow extra time at security."
+      ],
+      "visaRequired": false,
+      "estaRequired": true
+    },
+    "eu_to_canada": {
+      "documents": [
+        {"name": "Valid Passport", "description": "Must be valid for the duration of your stay.", "icon": "passport"},
+        {"name": "eTA (Electronic Travel Authorization)", "description": "Required if flying to Canada. Costs CAD $7, valid for 5 years. Apply at canada.ca/eta.", "icon": "visa"},
+        {"name": "Travel Insurance", "description": "Canadian healthcare is not free for visitors. Get medical travel insurance.", "icon": "insurance"}
+      ],
+      "notes": [
+        "eTA is required when flying to Canada (not needed if arriving by land or sea).",
+        "No visa required for EU citizens for stays up to 6 months.",
+        "Canadian healthcare is not free for visitors -- travel insurance is essential."
+      ],
+      "visaRequired": false,
+      "etaRequired": true
+    },
+    "eu_to_australia": {
+      "documents": [
+        {"name": "Valid Passport", "description": "Must be valid for at least 6 months.", "icon": "passport"},
+        {"name": "eVisitor Visa (subclass 651)", "description": "Free electronic visa for EU citizens. Apply online before departure.", "icon": "visa"},
+        {"name": "Travel Insurance", "description": "Australia has no reciprocal healthcare with most EU countries. Insurance is essential.", "icon": "insurance"}
+      ],
+      "notes": [
+        "eVisitor visa is free but must be obtained before travel. Allows stays up to 3 months.",
+        "Australia has strict biosecurity. Declare ALL food, plant material, and animal products.",
+        "No reciprocal healthcare agreement (except Italy, Belgium, and a few others with limited coverage).",
+        "Travel insurance with medical evacuation cover is strongly recommended."
+      ],
+      "visaRequired": true
+    },
+    "eu_to_japan": {
+      "documents": [
+        {"name": "Valid Passport", "description": "Must be valid for the duration of your stay.", "icon": "passport"},
+        {"name": "Return/Onward Ticket", "description": "Immigration may ask for proof of onward travel.", "icon": "ticket"},
+        {"name": "Travel Insurance", "description": "Japanese healthcare is excellent but expensive for visitors.", "icon": "insurance"}
+      ],
+      "notes": [
+        "No visa required for EU citizens for stays up to 90 days.",
+        "You may need to fill out a customs declaration and immigration card on the plane.",
+        "Visit Japan Web can be used for pre-entry immigration and customs."
+      ],
+      "visaRequired": false
+    },
+    "eu_to_other": {
+      "documents": [
+        {"name": "Valid Passport", "description": "Must be valid for at least 6 months beyond your planned return date.", "icon": "passport"},
+        {"name": "Visa (check requirements)", "description": "Visa requirements vary by destination. Check your destination country's embassy website.", "icon": "visa"},
+        {"name": "Travel Insurance", "description": "International travel insurance with medical cover is strongly recommended.", "icon": "insurance"},
+        {"name": "Vaccination Certificate", "description": "Some countries require proof of certain vaccinations (e.g., Yellow Fever).", "icon": "health"}
+      ],
+      "notes": [
+        "Check visa requirements for your specific destination well in advance.",
+        "Ensure your passport is valid for at least 6 months beyond your return date.",
+        "Some countries require proof of vaccination or negative COVID tests.",
+        "Register with your embassy if traveling to high-risk areas."
+      ],
+      "visaRequired": null
+    },
+    "us_to_eu": {
+      "documents": [
+        {"name": "Valid Passport", "description": "Must be valid for at least 3 months beyond planned departure from the Schengen area.", "icon": "passport"},
+        {"name": "Travel Insurance", "description": "While not mandatory, travel insurance with medical cover is strongly recommended.", "icon": "insurance"}
+      ],
+      "notes": [
+        "No visa required for US citizens for stays up to 90 days in a 180-day period (Schengen Area).",
+        "ETIAS (European Travel Information and Authorization System) may be required in the future -- check before booking.",
+        "Passport must be valid for at least 3 months beyond your planned departure from the Schengen area.",
+        "There is no Schengen-wide entry stamp requirement. You'll get stamped at first Schengen entry point."
+      ],
+      "visaRequired": false
+    },
+    "us_to_uk": {
+      "documents": [
+        {"name": "Valid Passport", "description": "Must be valid for the duration of your stay.", "icon": "passport"},
+        {"name": "Travel Insurance", "description": "UK NHS does not cover US visitors. Medical insurance is essential.", "icon": "insurance"}
+      ],
+      "notes": [
+        "No visa required for US citizens for stays up to 6 months.",
+        "You may need to show proof of return ticket and accommodation at immigration.",
+        "UK uses different plug type (Type G) -- bring an adapter."
+      ],
+      "visaRequired": false
+    },
+    "uk_to_eu": {
+      "documents": [
+        {"name": "Valid Passport", "description": "Post-Brexit, a passport is required. Must be valid for at least 3 months beyond departure date and issued within the last 10 years.", "icon": "passport"},
+        {"name": "Travel Insurance with Medical Cover", "description": "EHIC is no longer valid. UK GHIC provides limited cover in some EU countries, but travel insurance is essential.", "icon": "insurance"}
+      ],
+      "notes": [
+        "Post-Brexit: UK citizens are limited to 90 days in any 180-day period in the Schengen Area.",
+        "Passport must have been issued within the last 10 years AND be valid for at least 3 months beyond your departure date.",
+        "UK GHIC provides some healthcare coverage in EU countries, but is not a replacement for travel insurance.",
+        "You may be asked to show proof of accommodation, return ticket, and sufficient funds at border control."
+      ],
+      "visaRequired": false
+    },
+    "generic_international": {
+      "documents": [
+        {"name": "Valid Passport", "description": "Ensure at least 6 months validity beyond your return date.", "icon": "passport"},
+        {"name": "Visa (if required)", "description": "Check visa requirements for your nationality and destination.", "icon": "visa"},
+        {"name": "Travel Insurance", "description": "Comprehensive travel insurance with medical cover is essential.", "icon": "insurance"},
+        {"name": "Vaccination Records", "description": "Some countries require proof of specific vaccinations.", "icon": "health"},
+        {"name": "Return/Onward Ticket", "description": "Many countries require proof of onward travel.", "icon": "ticket"}
+      ],
+      "notes": [
+        "Always check visa requirements for your specific nationality well in advance.",
+        "Ensure your passport has at least 6 months validity.",
+        "Carry both digital and physical copies of all documents."
+      ],
+      "visaRequired": null
+    }
+  },
+  "plugAdapters": {
+    "A/B": "US/Japan-style (two flat pins)",
+    "C": "European two-pin (Europlug)",
+    "C/E": "European two-pin with ground (France/Belgium style)",
+    "C/F": "European two-pin with ground (Schuko)",
+    "C/E/F/K": "European with Danish variant",
+    "C/F/L": "European + Italian three-pin",
+    "C/J": "European + Swiss three-pin",
+    "C/D/M": "Indian multi-type",
+    "C/M/N": "South African multi-type",
+    "G": "UK three-pin rectangular",
+    "I": "Australian/NZ angled flat pins",
+    "N": "Brazilian three-pin round"
+  }
+}

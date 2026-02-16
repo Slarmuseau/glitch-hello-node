@@ -121,6 +121,21 @@ body {
   margin-bottom: 0;
 }
 
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-row:last-child {
+  margin-bottom: 0;
+}
+
+.form-group-half {
+  flex: 1;
+  min-width: 0;
+}
+
 .form-group label {
   display: block;
   font-weight: 600;
@@ -667,6 +682,89 @@ body {
 }
 
 /* ============================================
+   Travel Alerts (plug adapter, driving side)
+   ============================================ */
+
+.travel-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.travel-alert.alert-action {
+  background: #fef3c7;
+  border: 1px solid #fbbf24;
+  color: #78350f;
+}
+
+.travel-alert.alert-ok {
+  background: var(--color-secondary-light);
+  border: 1px solid #6ee7b7;
+  color: #065f46;
+}
+
+.travel-alert-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+/* ============================================
+   Entry Requirements Section
+   ============================================ */
+
+.entry-requirements-section {
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  border-top: 3px solid var(--color-primary);
+  margin-bottom: 1rem;
+}
+
+.entry-requirements-section h2 {
+  font-size: 1.25rem;
+  color: var(--color-primary);
+  margin-bottom: 0.75rem;
+}
+
+.entry-route {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-light);
+  margin-left: 0.5rem;
+}
+
+.entry-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.entry-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.6rem 0.8rem;
+  background: #f8fafc;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  border-left: 3px solid var(--color-primary);
+}
+
+.entry-note-icon {
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+
+/* ============================================
    Activity Suggestions Banner
    ============================================ */
 
@@ -962,6 +1060,11 @@ body {
   .tab.active {
     border-bottom: none;
     border-left-color: var(--color-primary);
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0;
   }
 
   .add-item-form {

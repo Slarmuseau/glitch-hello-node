@@ -86,6 +86,20 @@
         </div>
         {{/if}}
 
+        <!-- Travel Alerts (plug adapter, driving side, etc.) -->
+        {{#if hasPlugAdapter}}
+        <div class="travel-alert {{#if plugAdapter.needed}}alert-action{{else}}alert-ok{{/if}}">
+          <span class="travel-alert-icon">{{#if plugAdapter.needed}}&#9889;{{else}}&#9989;{{/if}}</span>
+          <span>{{plugAdapter.message}}</span>
+        </div>
+        {{/if}}
+        {{#if drivingSideWarning}}
+        <div class="travel-alert alert-action">
+          <span class="travel-alert-icon">&#9888;&#65039;</span>
+          <span>{{drivingSideWarning}}</span>
+        </div>
+        {{/if}}
+
         <!-- Tab Navigation -->
         <div class="tabs">
           <button class="tab active" data-tab="packing">Packing List</button>
@@ -230,9 +244,34 @@
 
         <!-- DOCUMENTS TAB -->
         <div class="tab-content" id="tab-documents">
+          <!-- Entry Requirements (country-pair specific) -->
+          {{#if hasEntryRequirements}}
+          <div class="entry-requirements-section">
+            <h2>Entry Requirements
+              {{#if departureCountry}}
+                <span class="entry-route">{{departureCountry.label}} &rarr; {{#if destinationInfo}}{{destinationInfo.country}}{{else}}Destination{{/if}}</span>
+              {{/if}}
+            </h2>
+            <div class="entry-notes">
+              {{#each entryRequirements.notes}}
+              <div class="entry-note">
+                <span class="entry-note-icon">&#8505;&#65039;</span>
+                <span>{{this}}</span>
+              </div>
+              {{/each}}
+            </div>
+          </div>
+          {{/if}}
+
           <div class="documents-section">
             <h2>Required Documents &amp; Papers</h2>
-            <p class="section-desc">Make sure you have these documents ready before your trip. Check them off as you prepare them.</p>
+            <p class="section-desc">
+              {{#if hasEntryRequirements}}
+                Documents tailored for your {{departureCountry.label}} &rarr; {{#if destinationInfo}}{{destinationInfo.country}}{{else}}destination{{/if}} trip. Check them off as you prepare them.
+              {{else}}
+                Make sure you have these documents ready before your trip. Check them off as you prepare them.
+              {{/if}}
+            </p>
             <ul class="documents-list">
               {{#each documents}}
               <li class="document-item">

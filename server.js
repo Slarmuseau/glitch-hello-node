@@ -52,6 +52,7 @@ const packingData = require("./src/packing-data.json");
 const travelAdvice = require("./src/travel-advice.json");
 const documentsData = require("./src/documents-data.json");
 const destinationAdvice = require("./src/destination-advice.json");
+const travelRequirements = require("./src/travel-requirements.json");
 const { getWeather } = require("./src/weather");
 
 const seo = require("./src/seo.json");
@@ -231,15 +232,22 @@ function getDestinationInfo(trip, weatherLocation) {
   return null;
 }
 
-// Generate document requirements
-function generateDocuments(trip) {
+// Generate document requirements (country-pair aware)
+function generateDocuments(trip, destinationCountryKey) {
   const docs = [];
 
   // Always-needed documents
   docs.push(...documentsData.always);
 
-  // International vs domestic
-  if (trip.international === "yes") {
+  // If we have departure + destination country info, use country-pair requirements
+  const departure = travelRequirements.countries[trip.departureCountry];
+  const entryReqs = getEntryRequirements(trip.departureCountry, destinationCountryKey);
+
+  if (entryReqs) {
+    // Use the country-pair specific documents
+    docs.push(...entryReqs.documents);
+  } else if (trip.international === "yes") {
+    // Fallback to generic international/domestic
     docs.push(...documentsData.international);
   } else {
     docs.push(...documentsData.domestic);
@@ -259,6 +267,139 @@ function generateDocuments(trip) {
     seen.add(doc.name);
     return true;
   });
+}
+
+// Determine entry requirements based on departure → destination country pair
+function getEntryRequirements(departureKey, destinationCountryKey) {
+  if (!departureKey) return null;
+
+  const departure = travelRequirements.countries[departureKey];
+  if (!departure) return null;
+
+  // Same country = domestic
+  if (departureKey === destinationCountryKey) return null;
+
+  // If no destination country detected, can't do pair matching
+  if (!destinationCountryKey) return null;
+
+  const destination = travelRequirements.countries[destinationCountryKey];
+  const depGroup = departure.visaGroup;
+  const destGroup = destination ? destination.visaGroup : null;
+
+  // Build the requirement lookup key
+  const reqs = travelRequirements.entryRequirements;
+
+  // EU → EU
+  if (depGroup === "eu" && destGroup === "eu") return reqs.eu_to_eu;
+  // EU → Schengen (Switzerland, Norway, Iceland)
+  if (depGroup === "eu" && destGroup === "schengen") return reqs.eu_to_schengen;
+  // Schengen → EU (same rules)
+  if (depGroup === "schengen" && destGroup === "eu") return reqs.eu_to_eu;
+  // Schengen → Schengen
+  if (depGroup === "schengen" && destGroup === "schengen") return reqs.eu_to_schengen;
+
+  // EU/Schengen → UK
+  if ((depGroup === "eu" || depGroup === "schengen") && destGroup === "uk") return reqs.eu_to_uk;
+  // EU/Schengen → US
+  if ((depGroup === "eu" || depGroup === "schengen") && destGroup === "us") return reqs.eu_to_us;
+  // EU/Schengen → Canada
+  if ((depGroup === "eu" || depGroup === "schengen") && destGroup === "canada") return reqs.eu_to_canada;
+  // EU/Schengen → Australia
+  if ((depGroup === "eu" || depGroup === "schengen") && destGroup === "australia") return reqs.eu_to_australia;
+  // EU/Schengen → Japan
+  if ((depGroup === "eu" || depGroup === "schengen") && destGroup === "japan") return reqs.eu_to_japan;
+  // EU/Schengen → other
+  if (depGroup === "eu" || depGroup === "schengen") return reqs.eu_to_other;
+
+  // US → EU
+  if (depGroup === "us" && (destGroup === "eu" || destGroup === "schengen")) return reqs.us_to_eu;
+  // US → UK
+  if (depGroup === "us" && destGroup === "uk") return reqs.us_to_uk;
+
+  // UK → EU
+  if (depGroup === "uk" && (destGroup === "eu" || destGroup === "schengen")) return reqs.uk_to_eu;
+
+  // Generic international fallback
+  return reqs.generic_international;
+}
+
+// Determine plug adapter needs by comparing departure and destination plug types
+function getPlugAdapterInfo(departureKey, destinationInfo) {
+  if (!departureKey || !destinationInfo) return null;
+
+  const departure = travelRequirements.countries[departureKey];
+  if (!departure) return null;
+
+  const depPlugs = departure.plugType.split("/").map((p) => p.trim());
+  const destPlugStr = destinationInfo.plugType || "";
+  // Extract plug type letters from destination (e.g., "Type C/E (European two-pin)" → ["C", "E"])
+  const destPlugs = destPlugStr
+    .replace(/Type\s*/i, "")
+    .replace(/\(.*\)/, "")
+    .split("/")
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+  // Check if any plug types overlap
+  const compatible = depPlugs.some((p) => destPlugs.includes(p));
+
+  if (compatible) {
+    return {
+      needed: false,
+      message: `Your ${departure.label} plugs (Type ${departure.plugType}) are compatible with the destination. No adapter needed!`,
+    };
+  }
+
+  const adapterDesc = travelRequirements.plugAdapters[departure.plugType] || departure.plugType;
+  return {
+    needed: true,
+    message: `You need a plug adapter! ${departure.label} uses Type ${departure.plugType} (${adapterDesc}), but the destination uses ${destPlugStr}. Bring a travel adapter or universal adapter.`,
+    fromPlug: departure.plugType,
+    toPlug: destPlugStr,
+  };
+}
+
+// Get driving side warning
+function getDrivingSideWarning(departureKey, destinationCountryKey) {
+  if (!departureKey || !destinationCountryKey) return null;
+
+  const departure = travelRequirements.countries[departureKey];
+  const destination = travelRequirements.countries[destinationCountryKey];
+  if (!departure || !destination) return null;
+  if (departure.drivingSide === destination.drivingSide) return null;
+
+  const destSide = destination.drivingSide;
+  return `Driving side difference: you're used to driving on the ${departure.drivingSide}, but ${destination.label} drives on the ${destSide}. Take extra care at intersections and roundabouts!`;
+}
+
+// Match destination country key from geocoded location or custom destination
+function matchDestinationCountry(trip, weatherLocation) {
+  const searchTerms = [];
+  if (trip.customDestination) searchTerms.push(trip.customDestination.toLowerCase().trim());
+  if (weatherLocation && weatherLocation.country) searchTerms.push(weatherLocation.country.toLowerCase());
+
+  // Search in travel-requirements countries
+  for (const term of searchTerms) {
+    for (const [key, data] of Object.entries(travelRequirements.countries)) {
+      const label = data.label.toLowerCase();
+      if (term.includes(label) || label.includes(term)) {
+        return key;
+      }
+    }
+  }
+
+  // Also check destination-advice countries (they use different key format)
+  for (const term of searchTerms) {
+    for (const country of Object.keys(destinationAdvice.countries)) {
+      if (term.includes(country) || country.includes(term)) {
+        // Convert destination-advice key format to travel-requirements key format
+        const reqKey = country.replace(/ /g, "_");
+        if (travelRequirements.countries[reqKey]) return reqKey;
+      }
+    }
+  }
+
+  return null;
 }
 
 // Weight estimation helper
@@ -375,6 +516,7 @@ fastify.post("/pack", async function (request, reply) {
     international: body.international || "no",
     customDestination: body.customDestination || "",
     username: body.username || "",
+    departureCountry: body.departureCountry || "",
   };
 
   // Fetch weather forecast for the destination (non-blocking, graceful failure)
@@ -385,10 +527,13 @@ fastify.post("/pack", async function (request, reply) {
   // Detect suggested activities based on weather + destination
   const suggestedActivities = detectSuggestedActivities(trip, weather);
 
+  // Match destination country for country-pair requirements
+  const destinationCountryKey = matchDestinationCountry(trip, weatherLocation);
+
   // Generate all data
   let packingList = generatePackingList(trip);
   const advice = generateAdvice(trip, weatherLocation);
-  const documents = generateDocuments(trip);
+  const documents = generateDocuments(trip, destinationCountryKey);
 
   // Add suggested activity items alongside the user's chosen trip type
   const addedItems = new Set(packingList.map((i) => i.name));
@@ -472,6 +617,25 @@ fastify.post("/pack", async function (request, reply) {
   // Get destination info (currency, language, plug type)
   const destinationInfo = getDestinationInfo(trip, weatherLocation);
 
+  // Country-pair specific info
+  const entryReqs = getEntryRequirements(trip.departureCountry, destinationCountryKey);
+  const plugAdapter = getPlugAdapterInfo(trip.departureCountry, destinationInfo);
+  const drivingSideWarning = getDrivingSideWarning(trip.departureCountry, destinationCountryKey);
+  const departureCountryData = travelRequirements.countries[trip.departureCountry] || null;
+
+  // Add plug adapter to packing list if needed
+  if (plugAdapter && plugAdapter.needed) {
+    const adapterItem = `Travel plug adapter (${plugAdapter.fromPlug} to ${plugAdapter.toPlug})`;
+    if (!addedItems.has(adapterItem)) {
+      addedItems.add(adapterItem);
+      packingList.push({ name: adapterItem, category: "Essentials", checked: false });
+      // Update the category in grouped items
+      if (groupedItems["Essentials"]) {
+        groupedItems["Essentials"].push({ name: adapterItem, category: "Essentials", checked: false });
+      }
+    }
+  }
+
   // Build weather advice (combines weather-based + destination-specific advice)
   const weatherAdvice = weather ? weather.advice : [];
 
@@ -495,6 +659,12 @@ fastify.post("/pack", async function (request, reply) {
     destinationInfo: destinationInfo,
     suggestedActivities: suggestedActivities,
     hasSuggestions: suggestedActivities.length > 0,
+    entryRequirements: entryReqs,
+    hasEntryRequirements: !!entryReqs,
+    plugAdapter: plugAdapter,
+    hasPlugAdapter: !!plugAdapter,
+    drivingSideWarning: drivingSideWarning,
+    departureCountry: departureCountryData,
   });
 });
 
