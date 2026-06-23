@@ -31,6 +31,7 @@ export default function FeestDetail(): JSX.Element {
       vaten={vaten.data ?? []}
       onSaved={() => feest.reload()}
       onResultaat={() => nav(`/feesten/${feestId}/resultaat`)}
+      onBlad={() => nav(`/feesten/${feestId}/blad`)}
       onDeleted={() => nav('/feesten')}
       toast={toast}
     />
@@ -55,6 +56,7 @@ function FeestForm({
   vaten,
   onSaved,
   onResultaat,
+  onBlad,
   onDeleted,
   toast
 }: {
@@ -64,6 +66,7 @@ function FeestForm({
   vaten: Vat[]
   onSaved: () => void
   onResultaat: () => void
+  onBlad: () => void
   onDeleted: () => void
   toast: (t: string, tone?: 'info' | 'good' | 'bad') => void
 }): JSX.Element {
@@ -161,6 +164,9 @@ function FeestForm({
           <>
             <button className="btn-ghost" onClick={verwijder}>
               Verwijderen
+            </button>
+            <button className="btn-outline" onClick={onBlad}>
+              Afdrukbaar blad
             </button>
             <button className="btn-outline" onClick={bewaarFeest}>
               Opslaan
