@@ -1,0 +1,52 @@
+name: Build installers
+
+# Builds the Tapwijs desktop installers on real Windows and macOS runners and
+# uploads them as downloadable artifacts. Start it by hand from the Actions tab
+# (Run workflow), or by pushing a tag like v0.1.0.
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: win
+            artifact: tapwijs-windows
+          - os: macos-latest
+            target: mac
+            artifact: tapwijs-macos
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build installer
+        run: npm run dist:${{ matrix.target }}
+        env:
+          # Skip code signing — produces an unsigned but working installer.
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            dist/*.exe
+            dist/*.dmg
+          if-no-files-found: warn

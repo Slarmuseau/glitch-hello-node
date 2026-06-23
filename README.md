@@ -87,6 +87,34 @@ npm run dev         # start de app met hot reload
 > `npm run rebuild` (electron-rebuild) dat ze tegen de Electron-runtime gebouwd
 > is. De renderer en de domeinlaag bouwen en testen ook zonder die stap.
 
+### Desktop-installer maken
+
+Een echte installer (dubbelklik, geen Node nodig voor de eindgebruiker) bouw je
+met electron-builder. Bouw altijd op het besturingssysteem waarvoor je een
+installer wil:
+
+```bash
+npm run dist:win      # Windows  -> dist/Tapwijs-Setup-<versie>.exe
+npm run dist:mac      # macOS    -> dist/Tapwijs-<versie>.dmg
+npm run dist:linux    # Linux    -> dist/Tapwijs-<versie>.AppImage
+```
+
+**Geen eigen Windows-/Mac-machine?** Gebruik de meegeleverde GitHub Action
+(`.github/workflows/build-installers.yml`). Start ze via **Actions → Build
+installers → Run workflow** (of push een tag `vX.Y.Z`). Ze bouwt de Windows- en
+macOS-installers op echte runners en levert ze als download-artefact af. Gratis,
+geen eigen build-pc nodig.
+
+> De installers zijn **niet ondertekend** (een handtekening-certificaat kost
+> geld en is optioneel). Windows toont daarom eenmalig een
+> SmartScreen-waarschuwing — kies "Meer informatie → Toch uitvoeren". Op macOS:
+> rechtsklik → Openen.
+>
+> Een eigen logo brandt de app: leg `build/icon.png` (512×512), `build/icon.ico`
+> (Windows) en `build/icon.icns` (macOS) klaar; electron-builder pikt ze
+> automatisch op. Zonder die bestanden gebruikt de app het standaard
+> Electron-icoon.
+
 ### Bouwen en controleren
 
 ```bash
