@@ -7,6 +7,7 @@ import VolumesVerpakking from './screens/VolumesVerpakking'
 import Forfaits from './screens/Forfaits'
 import Feesten from './screens/Feesten'
 import FeestDetail from './screens/FeestDetail'
+import Inzichten from './screens/Inzichten'
 import Resultaat from './screens/Resultaat'
 import Instellingen from './screens/Instellingen'
 import Over from './screens/Over'
@@ -23,6 +24,7 @@ export default function App(): JSX.Element {
           <Route path="feesten" element={<Feesten />} />
           <Route path="feesten/:id" element={<FeestDetail />} />
           <Route path="feesten/:id/resultaat" element={<Resultaat />} />
+          <Route path="inzichten" element={<Inzichten />} />
           <Route path="instellingen" element={<Instellingen />} />
           <Route path="over" element={<Over />} />
         </Route>

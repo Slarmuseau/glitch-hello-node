@@ -85,6 +85,62 @@ export interface ResultaatData {
   toelichtingen: RegelToelichting[]
 }
 
+export interface DrankAggregaat {
+  drank_id: number
+  naam: string
+  categorie: string
+  consumpties: number
+  aandeel_consumpties: number
+  inkoopkost: number
+  aandeel_kost: number
+  kost_per_consumptie: number
+}
+
+export interface TypePrestatie {
+  type_feest: string
+  label: string
+  aantal_feesten: number
+  gemiddelde_marge: number
+  gemiddeld_verwacht_per_hoofd: number
+  gemiddeld_werkelijk_per_hoofd: number
+}
+
+export interface ForfaitPrestatie {
+  forfait_id: number
+  forfait_naam: string
+  aantal_feesten: number
+  aantal_gehaald: number
+  gemiddelde_marge: number
+  richtprijs_historiek: number | null
+}
+
+export interface KortingRegel {
+  reden: string
+  aantal_feesten: number
+  weggegeven: number
+}
+
+export interface Advies {
+  tone: 'goed' | 'let_op' | 'tip'
+  tekst: string
+}
+
+export interface Inzichten {
+  aantal_feesten: number
+  globale_marge: number
+  globaal_resultaat: number
+  totaal_omzet: number
+  totaal_kost: number
+  drankRanking: DrankAggregaat[]
+  zeldenGedronken: DrankAggregaat[]
+  categorieMix: { categorie: string; consumpties: number; inkoopkost: number }[]
+  typePrestatie: TypePrestatie[]
+  forfaitPrestatie: ForfaitPrestatie[]
+  kortingLedger: KortingRegel[]
+  kortingTotaal: number
+  advies: Advies[]
+}
+
 export const api = {
   dranken: {
     list: () => inv<Drank[]>('dranken:list'),
@@ -114,6 +170,9 @@ export const api = {
   },
   resultaat: {
     build: (feestId: number) => inv<ResultaatData | null>('resultaat:build', feestId)
+  },
+  inzichten: {
+    build: () => inv<Inzichten>('inzichten:build')
   },
   snapshot: {
     build: () => inv<PrijsMomentopname>('snapshot:build')

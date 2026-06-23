@@ -6,6 +6,7 @@ const nav = [
   { to: '/volumes', label: 'Volumes en verpakking' },
   { to: '/forfaits', label: 'Forfaits' },
   { to: '/feesten', label: 'Feesten' },
+  { to: '/inzichten', label: 'Inzichten' },
   { to: '/instellingen', label: 'Instellingen' },
   { to: '/over', label: 'Over' }
 ]

@@ -28,6 +28,7 @@ import {
 import { getDatabasePath } from './db/database'
 import { buildResultaat } from './services/resultaat'
 import { forfaitHistoriek } from './services/forfaitHistoriek'
+import { buildInzichten } from './services/inzichten'
 import { buildPrijsMomentopname } from './services/snapshot'
 import { seedDemoData } from './services/seed'
 import { buildExport, restoreImport, drankenCsv } from './services/dataio'
@@ -63,6 +64,7 @@ const handlers: Record<string, Handler> = {
 
   // Afgeleide gegevens
   'resultaat:build': (feestId) => buildResultaat(feestId),
+  'inzichten:build': () => buildInzichten(),
   'snapshot:build': () => buildPrijsMomentopname(),
 
   // Instellingen
