@@ -74,7 +74,9 @@ export interface Forfait {
 
 export interface Toewijzing {
   id: number
-  forfait_id: number
+  forfait_id: number | null
+  /** Snapshot of the forfait name, kept even if the forfait is later renamed. */
+  forfait_naam: string
   aantal_personen: number
   forfaitprijs_per_persoon: number
 }
