@@ -243,6 +243,18 @@ export const api = {
   inzichten: {
     build: () => inv<Inzichten>('inzichten:build')
   },
+  net: {
+    info: async (): Promise<{ actief: boolean; port: number; urls: string[] }> => {
+      if (isElectron) return inv('net:info')
+      try {
+        const res = await fetch('/api/netinfo')
+        const data = await res.json()
+        return data.result
+      } catch {
+        return { actief: false, port: 0, urls: [] }
+      }
+    }
+  },
   snapshot: {
     build: () => inv<PrijsMomentopname>('snapshot:build')
   },

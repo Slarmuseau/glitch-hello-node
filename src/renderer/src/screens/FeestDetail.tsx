@@ -6,6 +6,7 @@ import { vatMap, TYPE_FEEST_LABEL, TYPE_FEEST_OPTIES } from '../lib/calc'
 import { PageHeader, Card, Field, Badge } from '../components/ui'
 import { NumberInput } from '../components/NumberInput'
 import { useToast } from '../components/Toast'
+import { MobielModal } from '../components/MobielModal'
 import { suggestedForfaitPrijs, type Drank, type Forfait, type Vat } from '@shared/domain'
 
 export default function FeestDetail(): JSX.Element {
@@ -81,6 +82,7 @@ function FeestForm({
     feest.toewijzingen.map((t) => ({ ...t }))
   )
   const [alleDranken, setAlleDranken] = useState(false)
+  const [mobielOpen, setMobielOpen] = useState(false)
 
   // Registration state keyed by drank id.
   const [reg, setReg] = useState<Map<number, Registratie>>(() => {
@@ -337,14 +339,19 @@ function FeestForm({
           <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wide">
             Registratie na het feest
           </h2>
-          <label className="flex items-center gap-2 text-xs text-ink-soft">
-            <input
-              type="checkbox"
-              checked={alleDranken}
-              onChange={(e) => setAlleDranken(e.target.checked)}
-            />
-            Toon alle dranken
-          </label>
+          <div className="flex items-center gap-4">
+            <button className="text-xs text-amber-700 hover:underline" onClick={() => setMobielOpen(true)}>
+              📱 Open op gsm
+            </button>
+            <label className="flex items-center gap-2 text-xs text-ink-soft">
+              <input
+                type="checkbox"
+                checked={alleDranken}
+                onChange={(e) => setAlleDranken(e.target.checked)}
+              />
+              Toon alle dranken
+            </label>
+          </div>
         </div>
         <p className="text-xs text-ink-faint mb-4">
           Tel het leeggoed, de lege flessen, de aangebroken vaten en de cocktails. In zestig
@@ -378,6 +385,10 @@ function FeestForm({
           </button>
         </div>
       </Card>
+
+      {mobielOpen && (
+        <MobielModal pad={`/feesten/${feest.id}`} onClose={() => setMobielOpen(false)} />
+      )}
     </div>
   )
 }
@@ -394,7 +405,7 @@ function RegistratieRij({
   onSet: (veld: keyof Registratie, val: number) => void
 }): JSX.Element {
   return (
-    <div className="flex items-center gap-3 py-1.5 px-3 rounded-xl hover:bg-cream/60">
+    <div className="flex flex-wrap items-center gap-3 py-1.5 px-3 rounded-xl hover:bg-cream/60">
       <div className="flex-1 min-w-0">
         <div className="text-sm font-medium text-ink truncate">{drank.naam}</div>
         <div className="text-xs text-ink-faint">
