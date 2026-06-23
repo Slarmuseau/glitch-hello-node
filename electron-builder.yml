@@ -37,6 +37,11 @@ mac:
     - dmg
   category: public.app-category.business
   artifactName: ${productName}-${version}.${ext}
+  # Ad-hoc signing (free, no Apple Developer account). Without this an unsigned
+  # app on Apple Silicon is rejected by macOS with a misleading "is damaged"
+  # message. Ad-hoc signing lets it run; the user still confirms once via
+  # right-click → Open (or by removing the download-quarantine attribute).
+  identity: '-'
 
 linux:
   target:
