@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-cream text-ink antialiased;
+    font-feature-settings: 'tnum' 0;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display tracking-tight;
+  }
+
+  /* Tabular figures for money columns. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-2xl shadow-soft border border-cream-deep;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium
+      transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-amber-500 text-white hover:bg-amber-600 shadow-soft;
+  }
+  .btn-ghost {
+    @apply btn text-ink-soft hover:bg-cream-deep;
+  }
+  .btn-outline {
+    @apply btn border border-amber-200 text-amber-700 hover:bg-amber-50;
+  }
+  .btn-danger {
+    @apply btn text-clay-500 hover:bg-clay-400/10;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-cream-deep bg-cream/40 px-3 py-2 text-sm text-ink
+      outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-200/60;
+  }
+  .label {
+    @apply block text-xs font-medium uppercase tracking-wide text-ink-faint mb-1;
+  }
+
+  .pill {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+}

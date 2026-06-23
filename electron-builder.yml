@@ -1,0 +1,45 @@
+appId: be.tothemoonandback.tapwijs
+productName: Tapwijs
+copyright: © To the Moon and Back
+
+# What goes into the packaged app. electron-vite outputs to out/.
+directories:
+  buildResources: build
+files:
+  - out/**/*
+  - package.json
+
+# better-sqlite3 is a native module: it must stay outside the asar archive so
+# its compiled .node binary can be loaded at runtime. electron-builder rebuilds
+# it for the target platform automatically during packaging.
+asarUnpack:
+  - "**/*.node"
+  - node_modules/better-sqlite3/**
+
+# Note: fastify/@fastify/static are only used by the localhost web build, not by
+# the desktop app, but they are harmless extra weight inside the package.
+
+win:
+  target:
+    - nsis
+  artifactName: ${productName}-Setup-${version}.${ext}
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Tapwijs
+
+mac:
+  target:
+    - dmg
+  category: public.app-category.business
+  artifactName: ${productName}-${version}.${ext}
+
+linux:
+  target:
+    - AppImage
+  category: Office
+  artifactName: ${productName}-${version}.${ext}
