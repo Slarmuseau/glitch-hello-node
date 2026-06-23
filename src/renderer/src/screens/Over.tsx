@@ -1,4 +1,5 @@
 import { PageHeader, Card } from '../components/ui'
+import ttmbLogo from '../assets/ttmb-logo.png'
 
 export default function Over(): JSX.Element {
   return (
@@ -20,8 +21,9 @@ export default function Over(): JSX.Element {
           geschiedenis. Alles blijft lokaal op deze computer; er is geen account en geen internet
           nodig voor dagelijks gebruik.
         </p>
-        <div className="mt-6 pt-4 border-t border-cream-deep text-sm text-ink-soft">
-          Gemaakt door <strong className="text-ink">To the Moon and Back</strong>.
+        <div className="mt-6 pt-5 border-t border-cream-deep">
+          <div className="text-sm text-ink-soft mb-2">Gemaakt door</div>
+          <img src={ttmbLogo} alt="To the Moon and Back" className="h-10 w-auto" />
         </div>
       </Card>
     </div>

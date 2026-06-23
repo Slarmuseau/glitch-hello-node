@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import ttmbLogo from '../assets/ttmb-logo.png'
 
 const nav = [
   { to: '/', label: 'Overzicht', exact: true },
@@ -44,8 +45,9 @@ export default function Layout(): JSX.Element {
             </NavLink>
           ))}
         </nav>
-        <div className="px-5 py-4 text-[11px] text-ink-faint border-t border-cream-deep">
-          Gemaakt door <span className="text-ink-soft">To the Moon and Back</span>
+        <div className="px-5 py-4 border-t border-cream-deep">
+          <div className="text-[11px] text-ink-faint mb-1.5">Gemaakt door</div>
+          <img src={ttmbLogo} alt="To the Moon and Back" className="h-7 w-auto opacity-90" />
         </div>
       </aside>
 
