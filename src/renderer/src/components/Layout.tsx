@@ -8,6 +8,7 @@ const nav = [
   { to: '/forfaits', label: 'Forfaits' },
   { to: '/feesten', label: 'Feesten' },
   { to: '/inzichten', label: 'Inzichten' },
+  { to: '/rapporten', label: 'Rapporten' },
   { to: '/instellingen', label: 'Instellingen' },
   { to: '/over', label: 'Over' }
 ]

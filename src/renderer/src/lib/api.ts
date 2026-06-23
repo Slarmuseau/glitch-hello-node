@@ -132,9 +132,37 @@ export interface DrankAggregaat {
   categorie: string
   consumpties: number
   aandeel_consumpties: number
+  omzet: number
   inkoopkost: number
   aandeel_kost: number
   kost_per_consumptie: number
+}
+
+export interface MargeRegel {
+  drank_id: number
+  naam: string
+  categorie: string
+  menuprijs: number
+  kost: number
+  marge_per_glas: number
+  marge_pct: number
+}
+
+export interface FeestRanking {
+  feest_id: number
+  naam: string
+  type_feest: string
+  label: string
+  datum: string
+  aantal_personen: number
+  forfaitmarge: number
+  alacarte_verschil: number
+  resultaat: number
+}
+
+export interface AlcoholDeel {
+  consumpties: number
+  omzet: number
 }
 
 export interface TypePrestatie {
@@ -161,25 +189,25 @@ export interface KortingRegel {
   weggegeven: number
 }
 
-export interface Advies {
-  tone: 'goed' | 'let_op' | 'tip'
-  tekst: string
-}
-
 export interface Inzichten {
   aantal_feesten: number
   globale_marge: number
   globaal_resultaat: number
   totaal_omzet: number
   totaal_kost: number
+  totaal_alacarte: number
+  totaal_consumpties: number
+  consumpties_per_persoon: number
+  alcohol: { alcoholisch: AlcoholDeel; nonalcoholisch: AlcoholDeel }
   drankRanking: DrankAggregaat[]
   zeldenGedronken: DrankAggregaat[]
-  categorieMix: { categorie: string; consumpties: number; inkoopkost: number }[]
+  margeRanking: MargeRegel[]
+  categorieMix: { categorie: string; consumpties: number; omzet: number; inkoopkost: number }[]
   typePrestatie: TypePrestatie[]
   forfaitPrestatie: ForfaitPrestatie[]
+  feestRanking: FeestRanking[]
   kortingLedger: KortingRegel[]
   kortingTotaal: number
-  advies: Advies[]
 }
 
 export const api = {
