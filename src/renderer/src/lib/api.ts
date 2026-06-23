@@ -90,7 +90,7 @@ export interface FeestOverzicht {
 
 export interface ForfaitHistoriek {
   aantal_feesten: number
-  gemiddelde_kost_per_hoofd: number
+  gemiddelde_alacarte_per_hoofd: number
   voorgestelde_prijs: number | null
 }
 

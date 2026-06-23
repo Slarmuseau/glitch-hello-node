@@ -13,7 +13,7 @@ import {
   type AttributieInput,
   type Vat
 } from '@shared/domain'
-import { getFeest, listDranken, listVaten, listForfaits, getInstellingen } from '../db/repo'
+import { getFeest, listDranken, listVaten, listForfaits } from '../db/repo'
 
 export interface RegelToelichting {
   drank_id: number
@@ -36,7 +36,6 @@ export function buildResultaat(feestId: number): ResultaatData | null {
   const dranken = new Map(listDranken().map((d) => [d.id, d]))
   const vaten = new Map<number, Vat>(listVaten().map((v) => [v.id, v]))
   const forfaits = new Map(listForfaits().map((f) => [f.id, f]))
-  const instellingen = getInstellingen()
 
   const regels: ResultaatRegelInput[] = []
   const toelichtingen: RegelToelichting[] = []
@@ -109,12 +108,7 @@ export function buildResultaat(feestId: number): ResultaatData | null {
     }
   })
 
-  const resultaat = computeFeestResultaat(
-    regels,
-    attributies,
-    feest.doelmarge,
-    instellingen.marge_conventie
-  )
+  const resultaat = computeFeestResultaat(regels, attributies, feest.doelmarge)
 
   return { feestId, resultaat, toelichtingen }
 }

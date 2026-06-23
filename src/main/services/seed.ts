@@ -187,7 +187,7 @@ export function seedDemoData(): void {
     type_feest: 'huwelijk',
     datum: '2026-05-30',
     publiek: 'Volwassenen',
-    doelmarge: 0.3,
+    doelmarge: 0.05,
     korting_reden: null,
     prijs_momentopname: snapshot,
     toewijzingen: [
@@ -213,7 +213,7 @@ export function seedDemoData(): void {
     type_feest: 'scoutsfeest',
     datum: '2026-04-12',
     publiek: 'Jong gezelschap',
-    doelmarge: 0.2,
+    doelmarge: 0.0,
     korting_reden: 'sociaal doel — jeugdvereniging',
     prijs_momentopname: snapshot,
     toewijzingen: [

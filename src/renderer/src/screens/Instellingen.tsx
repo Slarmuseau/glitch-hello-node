@@ -29,14 +29,20 @@ export default function Instellingen(): JSX.Element {
         <Card>
           <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wide mb-4">Marge</h2>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Standaard doelmarge (%)" hint="De ondergrens op je forfaitmarge">
+            <Field
+              label="Doel: % méér dan verkoop per glas"
+              hint="0% = even goed als per glas. Enkele % is een mooi doel."
+            >
               <NumberInput
                 value={data.standaard_doelmarge * 100}
                 onCommit={(n) => save({ standaard_doelmarge: n / 100 })}
                 suffix="%"
               />
             </Field>
-            <Field label="Marge-conventie" hint="De twee geven verschillende prijzen — kies je eigen betekenis">
+            <Field
+              label="Marge-conventie (2de inzicht)"
+              hint="Enkel voor de marge op inkoopkost; het forfait zelf is niet kost-plus."
+            >
               <select
                 className="input"
                 value={data.marge_conventie}

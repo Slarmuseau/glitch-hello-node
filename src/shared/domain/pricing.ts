@@ -2,38 +2,48 @@
 //
 // Governing rule: the margin already lives in the menu price. So a forfait is
 // NOT cost-plus. It is simply expected consumptions per head times menu price.
-// The drinks cost the same in the forfait as at the bar; the appeal is ease,
-// not a discount.
 //
-// The target margin is a FLOOR on the realized forfaitmarge, which is always
-// measured "op de omzet". The margin convention from settings only governs how
-// a price is derived FROM a cost.
+// The real question the owner asks: how much must a forfait cost per head so it
+// brings in at least as much as the SAME drinks sold by the glass (à-la-carte)?
+// Charging exactly the à-la-carte value = 0% (as good as per glass); a few
+// percent above is the goal, won from light drinkers.
 
 import type { MargeConventie } from './types'
 
-/** Derive a price from a cost using the owner's chosen margin convention. */
+/** Derive a price from a cost using a margin convention (kept for the
+ *  secondary cost-based insight; the forfait price itself is not cost-plus). */
 export function prijsVanKost(kost: number, marge: number, conventie: MargeConventie): number {
   if (conventie === 'opslag_op_kostprijs') {
     return kost * (1 + marge)
   }
-  // 'op_de_omzet'
   if (marge >= 1) return Infinity
   return kost / (1 - marge)
 }
 
 /**
- * Realized margin on a party. Always "op de omzet":
- *   forfaitmarge = (omzet - inkoopkost) / omzet
+ * PRIMARY measure — how much more (or less) the forfait earned versus the same
+ * drinks sold by the glass:
+ *   (forfait_omzet - alacarte_omzet) / alacarte_omzet
+ * 0 = exactly as good as per glass.
  */
-export function forfaitmarge(omzet: number, inkoopkost: number): number {
+export function forfaitmargeVsAlacarte(forfait_omzet: number, alacarte_omzet: number): number {
+  if (alacarte_omzet <= 0) return 0
+  return (forfait_omzet - alacarte_omzet) / alacarte_omzet
+}
+
+/**
+ * SECONDARY insight — gross margin on purchase cost, measured on revenue:
+ *   (omzet - inkoopkost) / omzet
+ */
+export function inkoopmargeOpOmzet(omzet: number, inkoopkost: number): number {
   if (omzet <= 0) return 0
   return (omzet - inkoopkost) / omzet
 }
 
 /**
- * Suggested forfait price from expected consumptions per head.
+ * Suggested forfait price from expected consumptions per head:
  *   forfaitprijs per persoon = verwachte consumpties per persoon * menuprijs
- * The representative menu price is the average menu price of the tier's drinks.
+ * This is the à-la-carte value per head — the break-even versus selling per glass.
  */
 export function suggestedForfaitPrijs(
   verwachte_consumpties_per_persoon: number,
@@ -43,30 +53,25 @@ export function suggestedForfaitPrijs(
 }
 
 /**
- * The buffer line: at this price, up to how many consumptions per head can a
- * guest take before the realized forfaitmarge drops below the target floor?
- *   forfaitmarge = (prijs - n*kost) / prijs >= doelmarge
- *   => n <= prijs * (1 - doelmarge) / kost
- * Always measured op de omzet (the floor is on the realized margin).
+ * Forfait price per head to reach the à-la-carte value plus the target uplift:
+ *   prijs = alacarte_per_persoon * (1 + doelmarge)
  */
-export function bufferConsumptiesPerHoofd(
-  prijs_per_persoon: number,
-  gemiddeldeKostPerConsumptie: number,
-  doelmarge: number
-): number {
-  if (gemiddeldeKostPerConsumptie <= 0) return Infinity
-  const n = (prijs_per_persoon * (1 - doelmarge)) / gemiddeldeKostPerConsumptie
-  return Math.floor(n)
+export function forfaitPrijsVoorMarge(alacarte_per_persoon: number, doelmarge: number): number {
+  return alacarte_per_persoon * (1 + doelmarge)
 }
 
 /**
- * Hindsight price for a party: the price per head that would have exactly met
- * the target floor, given the cost actually drunk per head.
+ * The buffer line: at this price per head, up to how many consumptions can a
+ * guest take before the forfait drops below the per-glass value (plus target)?
+ *   prijs >= n * gem_menuprijs * (1 + doelmarge)
+ *   => n <= prijs / (gem_menuprijs * (1 + doelmarge))
  */
-export function hindsightPrijsPerPersoon(
-  inkoopkostPerPersoon: number,
-  doelmarge: number,
-  conventie: MargeConventie
+export function bufferConsumptiesPerHoofd(
+  prijs_per_persoon: number,
+  gemiddeldeMenuprijs: number,
+  doelmarge: number
 ): number {
-  return prijsVanKost(inkoopkostPerPersoon, doelmarge, conventie)
+  const noemer = gemiddeldeMenuprijs * (1 + doelmarge)
+  if (noemer <= 0) return Infinity
+  return Math.floor(prijs_per_persoon / noemer)
 }

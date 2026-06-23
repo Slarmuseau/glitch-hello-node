@@ -90,6 +90,7 @@ export function buildInzichten(): Inzichten {
 
   let totaalOmzet = 0
   let totaalKost = 0
+  let totaalAlacarte = 0
   let resultaatSom = 0
   let kortingTotaal = 0
 
@@ -100,6 +101,7 @@ export function buildInzichten(): Inzichten {
 
     totaalOmzet += r.forfait_omzet
     totaalKost += r.totaal_inkoopkost
+    totaalAlacarte += r.alacarte_omzet
     resultaatSom += r.resultaat
 
     for (const regel of r.regels) {
@@ -202,9 +204,11 @@ export function buildInzichten(): Inzichten {
     .map(([categorie, v]) => ({ categorie, ...v }))
     .sort((a, b) => b.consumpties - a.consumpties)
 
+  const globaleMarge = totaalAlacarte > 0 ? (totaalOmzet - totaalAlacarte) / totaalAlacarte : 0
+
   return {
     aantal_feesten: overzicht.length,
-    globale_marge: totaalOmzet > 0 ? (totaalOmzet - totaalKost) / totaalOmzet : 0,
+    globale_marge: globaleMarge,
     globaal_resultaat: resultaatSom,
     totaal_omzet: totaalOmzet,
     totaal_kost: totaalKost,
@@ -221,7 +225,7 @@ export function buildInzichten(): Inzichten {
       typePrestatie,
       forfaitPrestatie,
       kortingTotaal,
-      globaleMarge: totaalOmzet > 0 ? (totaalOmzet - totaalKost) / totaalOmzet : 0,
+      globaleMarge,
       doelmarge: inst.standaard_doelmarge
     })
   }
@@ -242,16 +246,20 @@ function maakAdvies(d: {
   if (d.globaleMarge >= d.doelmarge) {
     advies.push({
       tone: 'goed',
-      tekst: `Over alle feesten heen haal je een marge van ${formatPercent(
+      tekst: `Over alle feesten heen bracht je forfait ${formatPercent(
         d.globaleMarge
-      )}, boven je doelmarge van ${formatPercent(d.doelmarge)}. Mooi werk.`
+      )} méér op dan dezelfde drankjes per glas — boven je doel van ${formatPercent(
+        d.doelmarge
+      )}. Mooi werk.`
     })
   } else {
     advies.push({
       tone: 'let_op',
-      tekst: `Je globale marge is ${formatPercent(d.globaleMarge)}, onder je doelmarge van ${formatPercent(
+      tekst: `Je forfait bracht over alle feesten ${formatPercent(
+        d.globaleMarge
+      )} op t.o.v. verkoop per glas, onder je doel van ${formatPercent(
         d.doelmarge
-      )}. Bekijk de forfaits hieronder die het vaakst onder de ondergrens duiken.`
+      )}. Bekijk de forfaits hieronder die het vaakst onder de lat duiken.`
     })
   }
 

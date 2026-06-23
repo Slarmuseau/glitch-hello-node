@@ -1,31 +1,31 @@
 // The third pricing path: once enough parties exist, propose a forfait price
-// from history — recomputed at TODAY's prices — that clears the target floor.
+// from history — recomputed at TODAY's menu prices — that reaches the target
+// uplift over selling per glass.
 //
 // Consumptions are measured per party, not per attribution, so we attribute a
-// party's cost-per-head to every forfait it used. Rough but honest, and it only
-// surfaces once there is real history.
+// party's à-la-carte value per head to every forfait it used. Rough but honest,
+// and it only surfaces once there is real history.
 
 import {
-  kostprijsPerConsumptie,
   consumptiesUitFles,
   consumptiesUitVatWeging,
-  prijsVanKost,
+  forfaitPrijsVoorMarge,
   type Vat
 } from '@shared/domain'
-import { listDranken, listVaten, listFeesten, getFeest, getInstellingen } from '../db/repo'
+import { listDranken, listVaten, listFeesten, getFeest } from '../db/repo'
 
 export interface ForfaitHistoriek {
   aantal_feesten: number
-  gemiddelde_kost_per_hoofd: number
+  /** Average à-la-carte value per head (at today's menu prices). */
+  gemiddelde_alacarte_per_hoofd: number
   voorgestelde_prijs: number | null
 }
 
 export function forfaitHistoriek(forfaitId: number, doelmarge: number): ForfaitHistoriek {
   const dranken = new Map(listDranken().map((d) => [d.id, d]))
   const vaten = new Map<number, Vat>(listVaten().map((v) => [v.id, v]))
-  const inst = getInstellingen()
 
-  const kostPerHoofd: number[] = []
+  const alacartePerHoofd: number[] = []
 
   for (const f of listFeesten()) {
     const feest = getFeest(f.id)
@@ -36,7 +36,7 @@ export function forfaitHistoriek(forfaitId: number, doelmarge: number): ForfaitH
     const personen = feest.toewijzingen.reduce((s, t) => s + t.aantal_personen, 0)
     if (personen <= 0) continue
 
-    let kostVandaag = 0
+    let alacarteVandaag = 0
     for (const reg of feest.registraties) {
       const drank = dranken.get(reg.drank_id)
       if (!drank) continue
@@ -53,20 +53,20 @@ export function forfaitHistoriek(forfaitId: number, doelmarge: number): ForfaitH
             gewicht_laatste_vat_kg: reg.gewicht_laatste_vat_kg
           })
       }
-      const vat = drank.vat_id ? vaten.get(drank.vat_id) ?? null : null
-      kostVandaag += cons * kostprijsPerConsumptie(drank, vat)
+      // Value at today's menu price (per-glass value).
+      alacarteVandaag += cons * drank.menuprijs
     }
-    kostPerHoofd.push(kostVandaag / personen)
+    alacartePerHoofd.push(alacarteVandaag / personen)
   }
 
-  if (kostPerHoofd.length === 0) {
-    return { aantal_feesten: 0, gemiddelde_kost_per_hoofd: 0, voorgestelde_prijs: null }
+  if (alacartePerHoofd.length === 0) {
+    return { aantal_feesten: 0, gemiddelde_alacarte_per_hoofd: 0, voorgestelde_prijs: null }
   }
 
-  const gem = kostPerHoofd.reduce((s, x) => s + x, 0) / kostPerHoofd.length
+  const gem = alacartePerHoofd.reduce((s, x) => s + x, 0) / alacartePerHoofd.length
   return {
-    aantal_feesten: kostPerHoofd.length,
-    gemiddelde_kost_per_hoofd: gem,
-    voorgestelde_prijs: prijsVanKost(gem, doelmarge, inst.marge_conventie)
+    aantal_feesten: alacartePerHoofd.length,
+    gemiddelde_alacarte_per_hoofd: gem,
+    voorgestelde_prijs: forfaitPrijsVoorMarge(gem, doelmarge)
   }
 }

@@ -7,7 +7,7 @@ PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS instellingen (
   id INTEGER PRIMARY KEY CHECK (id = 1),
-  standaard_doelmarge REAL NOT NULL DEFAULT 0.30,
+  standaard_doelmarge REAL NOT NULL DEFAULT 0.05,
   marge_conventie TEXT NOT NULL DEFAULT 'op_de_omzet',
   bedrijfsnaam TEXT NOT NULL DEFAULT '',
   bedrijfsgegevens TEXT NOT NULL DEFAULT '',
@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS feesten (
   type_feest TEXT NOT NULL DEFAULT 'andere',
   datum TEXT NOT NULL,
   publiek TEXT,
-  doelmarge REAL NOT NULL DEFAULT 0.30,
+  doelmarge REAL NOT NULL DEFAULT 0.05,
   korting_reden TEXT,
   prijs_momentopname TEXT NOT NULL DEFAULT '{}',
   aangemaakt TEXT NOT NULL DEFAULT (datetime('now'))
