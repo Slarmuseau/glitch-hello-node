@@ -1,89 +1,18 @@
-// Registers all IPC handlers. The renderer talks to these channels through the
-// thin preload bridge (window.tapwijs.invoke).
+// Registers all IPC handlers for the Electron app. The business logic lives in
+// the shared coreHandlers; here we add only the desktop-specific operations
+// that need native file dialogs and the OS file manager.
 
 import { ipcMain, dialog, shell, BrowserWindow } from 'electron'
 import { writeFileSync, readFileSync, copyFileSync } from 'fs'
 import { basename } from 'path'
-import {
-  listDranken,
-  upsertDrank,
-  deleteDrank,
-  listVaten,
-  upsertVat,
-  deleteVat,
-  listForfaits,
-  upsertForfait,
-  deleteForfait,
-  listFeesten,
-  listFeestOverzicht,
-  getFeest,
-  upsertFeest,
-  deleteFeest,
-  saveRegistraties,
-  getInstellingen,
-  saveInstellingen,
-  isDemoGeladen,
-  wisAlleData
-} from './db/repo'
+import { coreHandlers } from './handlers'
 import { getDatabasePath } from './db/database'
-import { buildResultaat } from './services/resultaat'
-import { forfaitHistoriek } from './services/forfaitHistoriek'
-import { buildInzichten } from './services/inzichten'
-import { buildPrijsMomentopname } from './services/snapshot'
-import { seedDemoData } from './services/seed'
 import { buildExport, restoreImport, drankenCsv } from './services/dataio'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Handler = (payload: any, event: Electron.IpcMainInvokeEvent) => any
 
-const handlers: Record<string, Handler> = {
-  // Dranken
-  'dranken:list': () => listDranken(),
-  'dranken:upsert': (d) => upsertDrank(d),
-  'dranken:delete': (id) => deleteDrank(id),
-
-  // Vaten
-  'vaten:list': () => listVaten(),
-  'vaten:upsert': (v) => upsertVat(v),
-  'vaten:delete': (id) => deleteVat(id),
-
-  // Forfaits
-  'forfaits:list': () => listForfaits(),
-  'forfaits:upsert': (f) => upsertForfait(f),
-  'forfaits:delete': (id) => deleteForfait(id),
-  'forfaits:historiek': ({ forfaitId, doelmarge }) => forfaitHistoriek(forfaitId, doelmarge),
-
-  // Feesten
-  'feesten:list': () => listFeesten(),
-  'feesten:overzicht': () => listFeestOverzicht(),
-  'feesten:get': (id) => getFeest(id),
-  'feesten:upsert': (f) => upsertFeest(f),
-  'feesten:delete': (id) => deleteFeest(id),
-  'feesten:saveRegistraties': ({ feestId, registraties }) =>
-    saveRegistraties(feestId, registraties),
-
-  // Afgeleide gegevens
-  'resultaat:build': (feestId) => buildResultaat(feestId),
-  'inzichten:build': () => buildInzichten(),
-  'snapshot:build': () => buildPrijsMomentopname(),
-
-  // Instellingen
-  'instellingen:get': () => getInstellingen(),
-  'instellingen:save': (s) => saveInstellingen(s),
-
-  // Demo
-  'demo:status': () => ({ geladen: isDemoGeladen() }),
-  'demo:seed': () => {
-    seedDemoData()
-    return { ok: true }
-  },
-  'demo:wis': () => {
-    wisAlleData()
-    return { ok: true }
-  },
-
-  // Data in/uit + back-up
-  'data:dbPath': () => getDatabasePath(),
+const electronHandlers: Record<string, Handler> = {
   'data:export': async () => {
     const win = BrowserWindow.getFocusedWindow()
     const res = await dialog.showSaveDialog(win!, {
@@ -138,7 +67,8 @@ const handlers: Record<string, Handler> = {
 }
 
 export function registerIpc(): void {
-  for (const [channel, handler] of Object.entries(handlers)) {
+  const all: Record<string, Handler> = { ...coreHandlers, ...electronHandlers }
+  for (const [channel, handler] of Object.entries(all)) {
     ipcMain.handle(channel, (event, payload) => handler(payload, event))
   }
 }

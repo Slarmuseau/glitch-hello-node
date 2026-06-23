@@ -5,5 +5,6 @@ interface TapwijsBridge {
 }
 
 interface Window {
-  tapwijs: TapwijsBridge
+  // Present only in the Electron build; absent in the localhost web build.
+  tapwijs?: TapwijsBridge
 }

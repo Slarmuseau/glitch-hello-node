@@ -44,9 +44,32 @@ glas, de twee marge-conventies, en het volledige feestresultaat).
 npm test            # 34 domeintests
 ```
 
+## Twee manieren om te draaien
+
+Tapwijs kan op **twee** manieren draaien, met dezelfde code en dezelfde
+rekenkern:
+
+1. **Desktop-app (Electron).** Een venster op de computer, volledig offline.
+2. **Webversie op localhost.** Een kleine server die je in de browser opent —
+   "zoals een gewone Node-app".
+
+### Webversie (localhost)
+
+```bash
+npm install
+npm start            # = npm run web: bouwt de webversie en start de server
+# open daarna http://localhost:3000 in je browser
+```
+
+De server hergebruikt exact dezelfde logica als de desktop-app (via
+`coreHandlers`). De database staat in `./tapwijs-data/tapwijs.sqlite` naast de
+plek waar je de app start (aanpasbaar met de omgevingsvariabele `TAPWIJS_DATA`),
+zodat ze makkelijk te vinden en te back-uppen is.
+
 ## Technisch
 
 - **Electron + React + TypeScript**, gebundeld met **electron-vite**.
+- **Fastify** voor de localhost-webversie (`src/server`).
 - **SQLite** via `better-sqlite3` — één lokaal bestand, eenvoudig te vinden en te
   back-uppen.
 - **Tailwind CSS** voor de stijl, **Recharts** voor de grafieken.

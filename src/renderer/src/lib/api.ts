@@ -10,8 +10,49 @@ import type {
   PrijsMomentopname
 } from '@shared/domain'
 
-const inv = <T,>(channel: string, payload?: unknown): Promise<T> =>
-  window.tapwijs.invoke<T>(channel, payload)
+// Two transports behind one call: the Electron preload bridge when present,
+// otherwise an HTTP POST to the localhost web server. Screens never know which.
+const isElectron = typeof window !== 'undefined' && !!window.tapwijs
+
+async function inv<T>(channel: string, payload?: unknown): Promise<T> {
+  if (isElectron) return window.tapwijs!.invoke<T>(channel, payload)
+  const res = await fetch('/api/invoke', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ channel, payload })
+  })
+  const data = await res.json().catch(() => ({ error: `Fout (${res.status})` }))
+  if (!res.ok || data.error) throw new Error(data.error || `Fout (${res.status})`)
+  return data.result as T
+}
+
+/** Trigger a browser download (web build). */
+function download(url: string): void {
+  const a = document.createElement('a')
+  a.href = url
+  a.rel = 'noopener'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+}
+
+/** Pick a local file and return its text (web build). */
+function pickFile(accept: string): Promise<string | null> {
+  return new Promise((resolve) => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = accept
+    input.onchange = () => {
+      const file = input.files?.[0]
+      if (!file) return resolve(null)
+      const reader = new FileReader()
+      reader.onload = () => resolve(String(reader.result))
+      reader.onerror = () => resolve(null)
+      reader.readAsText(file)
+    }
+    input.click()
+  })
+}
 
 export type DrankInput = Omit<Drank, 'id'> & { id?: number }
 export type VatInput = Omit<Vat, 'id'> & { id?: number }
@@ -188,10 +229,37 @@ export const api = {
   },
   data: {
     dbPath: () => inv<string>('data:dbPath'),
-    exportAlles: () => inv<{ ok: boolean; pad?: string }>('data:export'),
-    exportCsv: () => inv<{ ok: boolean; pad?: string }>('data:exportCsv'),
-    importAlles: () => inv<{ ok: boolean }>('data:import'),
-    backup: () => inv<{ ok: boolean; pad?: string }>('data:backup'),
-    revealDb: () => inv<{ ok: boolean; naam?: string }>('data:revealDb')
+    exportAlles: async (): Promise<{ ok: boolean; pad?: string }> => {
+      if (isElectron) return inv('data:export')
+      download('/api/export')
+      return { ok: true }
+    },
+    exportCsv: async (): Promise<{ ok: boolean; pad?: string }> => {
+      if (isElectron) return inv('data:exportCsv')
+      download('/api/export-csv')
+      return { ok: true }
+    },
+    backup: async (): Promise<{ ok: boolean; pad?: string }> => {
+      if (isElectron) return inv('data:backup')
+      download('/api/backup')
+      return { ok: true }
+    },
+    importAlles: async (): Promise<{ ok: boolean }> => {
+      if (isElectron) return inv('data:import')
+      const text = await pickFile('.json,application/json')
+      if (!text) return { ok: false }
+      const res = await fetch('/api/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: text
+      })
+      return { ok: res.ok }
+    },
+    revealDb: async (): Promise<{ ok: boolean; naam?: string }> => {
+      if (isElectron) return inv('data:revealDb')
+      // No OS file manager in the browser; surface the path instead.
+      const pad = await inv<string>('data:dbPath')
+      return { ok: true, naam: pad }
+    }
   }
 }
