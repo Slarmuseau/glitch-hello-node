@@ -1,3 +1,13 @@
-.glitchdotcom.json
-.node-gyp
 node_modules
+out
+dist
+dist-electron
+.DS_Store
+*.log
+.env
+.env.local
+.node-gyp
+# Local SQLite databases used during development
+*.sqlite
+*.sqlite3
+*.db
