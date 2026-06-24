@@ -66,7 +66,7 @@ export default function DrankenPrijzen(): JSX.Element {
           door je eigen cijfers. De inkoop staat in de eenheid waarin je koopt: per stuk, per fles
           of per vat. De kostprijs per consumptie wordt automatisch berekend.
           <br />
-          <strong>Alle prijzen zijn in euro (€), inclusief BTW.</strong>
+          <strong>Alle prijzen zijn in euro (€).</strong>
         </p>
       </Card>
 
@@ -107,19 +107,11 @@ export default function DrankenPrijzen(): JSX.Element {
                             onCommit={(n) => saveInkoop(d, n)}
                             suffix={eenheid.korte}
                           />
-                          <BtwVeld
-                            value={d.btw_inkoop ?? 21}
-                            onCommit={(n) => api.dranken.upsert({ ...d, btw_inkoop: n }).then(reload)}
-                          />
                         </td>
                         <td className="px-4 py-2.5">
                           <NumberInput
                             value={d.menuprijs}
                             onCommit={(n) => api.dranken.upsert({ ...d, menuprijs: n }).then(reload)}
-                          />
-                          <BtwVeld
-                            value={d.btw_verkoop ?? 21}
-                            onCommit={(n) => api.dranken.upsert({ ...d, btw_verkoop: n }).then(reload)}
                           />
                         </td>
                         <td className="px-4 py-2.5 text-right tabular text-ink-soft">
@@ -158,35 +150,6 @@ export default function DrankenPrijzen(): JSX.Element {
 
 function Laden(): JSX.Element {
   return <div className="text-ink-faint">Laden…</div>
-}
-
-// Compact inline VAT (BTW) next to a price. Uncontrolled; commits on blur.
-function BtwVeld({
-  value,
-  onCommit
-}: {
-  value: number
-  onCommit: (n: number) => void
-}): JSX.Element {
-  return (
-    <div className="flex items-center gap-1 mt-1 text-[11px] text-ink-faint">
-      <span>BTW</span>
-      <input
-        key={value}
-        defaultValue={value}
-        inputMode="decimal"
-        className="w-10 rounded border border-cream-deep bg-cream/40 px-1 py-0.5 text-[11px] text-ink text-right outline-none focus:border-amber-300"
-        onBlur={(e) => {
-          const n = parseFloat(e.target.value.replace(',', '.'))
-          onCommit(Number.isFinite(n) ? n : 0)
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
-        }}
-      />
-      <span>%</span>
-    </div>
-  )
 }
 
 function NieuweDrankModal({

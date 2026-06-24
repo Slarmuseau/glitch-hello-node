@@ -113,9 +113,11 @@ export interface Inzichten {
   kortingTotaal: number
 }
 
-export function buildInzichten(): Inzichten {
+export function buildInzichten(van?: string | null, tot?: string | null): Inzichten {
   const inst = getInstellingen()
-  const overzicht = listFeestOverzicht().filter((f) => f.geregistreerd)
+  const overzicht = listFeestOverzicht().filter(
+    (f) => f.geregistreerd && (!van || f.datum >= van) && (!tot || f.datum <= tot)
+  )
   const forfaits = listForfaits()
 
   const dranken = new Map<number, DrankAggregaat>()

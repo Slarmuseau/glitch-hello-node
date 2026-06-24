@@ -92,9 +92,7 @@ export function buildResultaat(feestId: number): ResultaatData | null {
         categorie: drank.categorie,
         consumpties,
         inkoopprijs_per_consumptie: inkoop,
-        menuprijs: menu,
-        btw_inkoop: drank.btw_inkoop ?? 21,
-        btw_verkoop: drank.btw_verkoop ?? 21
+        menuprijs: menu
       })
       toelichtingen.push({ drank_id: drank.id, naam: drank.naam, schenkwijze: drank.schenkwijze, meting, berekening })
     }

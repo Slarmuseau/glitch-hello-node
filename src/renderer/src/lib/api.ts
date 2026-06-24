@@ -166,23 +166,6 @@ export interface AlcoholDeel {
   omzet: number
 }
 
-export interface BtwPeriode {
-  van: string
-  tot: string
-  verkoop_btw: number
-  inkoop_btw: number
-  verschuldigd: number
-  per_tarief: { tarief: number; inkoop_incl: number; btw: number }[]
-  feesten: {
-    feest_id: number
-    naam: string
-    datum: string
-    verkoop_btw: number
-    inkoop_btw: number
-    verschuldigd: number
-  }[]
-}
-
 export interface TypePrestatie {
   type_feest: string
   label: string
@@ -259,10 +242,7 @@ export const api = {
     build: (feestId: number) => inv<ResultaatData | null>('resultaat:build', feestId)
   },
   inzichten: {
-    build: () => inv<Inzichten>('inzichten:build')
-  },
-  btw: {
-    periode: (van: string, tot: string) => inv<BtwPeriode>('btw:periode', { van, tot })
+    build: (van?: string, tot?: string) => inv<Inzichten>('inzichten:build', { van, tot })
   },
   net: {
     info: async (): Promise<{ actief: boolean; port: number; urls: string[] }> => {

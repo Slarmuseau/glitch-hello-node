@@ -10,7 +10,6 @@
 // The margin on purchase cost is kept too, but only as a secondary insight.
 
 import { inkoopmargeOpOmzet } from './pricing'
-import { btwInBedrag } from './btw'
 
 /** One drink's contribution, with consumptions already derived from measurement. */
 export interface ResultaatRegelInput {
@@ -23,21 +22,6 @@ export interface ResultaatRegelInput {
   inkoopprijs_per_consumptie: number
   /** Snapshot menu price per consumption on the party date. */
   menuprijs: number
-  /** Purchase VAT rate in percent (default 21). */
-  btw_inkoop?: number | null
-  /** Sales VAT rate in percent (default 21). */
-  btw_verkoop?: number | null
-}
-
-export interface BtwOverzicht {
-  /** Output VAT, on the à-la-carte (menu) value of what was sold. */
-  verkoop_btw: number
-  /** Input VAT, on purchases. */
-  inkoop_btw: number
-  /** Purchases broken down per VAT rate. */
-  per_tarief: { tarief: number; inkoop_incl: number; btw: number }[]
-  /** Output VAT minus input VAT. */
-  verschuldigd: number
 }
 
 export interface AttributieInput {
@@ -84,8 +68,6 @@ export interface FeestResultaat {
   resultaat: number
   /** Total discount given to customers, in euro (before-discount minus actual). */
   totaal_korting: number
-  /** VAT overview (prices are incl. BTW). */
-  btw: BtwOverzicht
 
   inkoopkost_per_persoon: number
   /** Forfait price per head matching the per-glass value plus the target uplift. */
@@ -137,31 +119,6 @@ export function computeFeestResultaat(
     0
   )
 
-  // VAT (prices incl. BTW). Both purchase and sale VAT are per drink: input VAT
-  // on purchases, output VAT on the à-la-carte (menu) value of what was sold.
-  const tariefMap = new Map<number, { inkoop_incl: number; btw: number }>()
-  let inkoop_btw_totaal = 0
-  let verkoop_btw_totaal = 0
-  for (const r of verrijkteRegels) {
-    const tariefIn = r.btw_inkoop ?? 21
-    const btwIn = btwInBedrag(r.inkoopkost, tariefIn)
-    inkoop_btw_totaal += btwIn
-    const t = tariefMap.get(tariefIn) ?? { inkoop_incl: 0, btw: 0 }
-    t.inkoop_incl += r.inkoopkost
-    t.btw += btwIn
-    tariefMap.set(tariefIn, t)
-
-    verkoop_btw_totaal += btwInBedrag(r.alacarte_omzet, r.btw_verkoop ?? 21)
-  }
-  const btw: BtwOverzicht = {
-    verkoop_btw: verkoop_btw_totaal,
-    inkoop_btw: inkoop_btw_totaal,
-    per_tarief: [...tariefMap.entries()]
-      .map(([tarief, v]) => ({ tarief, ...v }))
-      .sort((a, b) => b.tarief - a.tarief),
-    verschuldigd: verkoop_btw_totaal - inkoop_btw_totaal
-  }
-
   return {
     regels: verrijkteRegels,
     aantal_personen,
@@ -177,7 +134,6 @@ export function computeFeestResultaat(
     inkoopmarge: inkoopmargeOpOmzet(forfait_omzet, totaal_inkoopkost),
     resultaat: forfait_omzet - totaal_inkoopkost,
     totaal_korting,
-    btw,
     inkoopkost_per_persoon,
     hindsight_prijs_per_persoon: alacarte_per_persoon * (1 + doelmarge),
     verwachte_consumpties_totaal,

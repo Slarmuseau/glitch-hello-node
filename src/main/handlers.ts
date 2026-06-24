@@ -27,7 +27,6 @@ import {
 import { getDatabasePath } from './db/database'
 import { buildResultaat } from './services/resultaat'
 import { buildInzichten } from './services/inzichten'
-import { btwPeriode } from './services/btwPeriode'
 import { forfaitHistoriek } from './services/forfaitHistoriek'
 import { buildPrijsMomentopname } from './services/snapshot'
 import { seedDemoData } from './services/seed'
@@ -58,8 +57,7 @@ export const coreHandlers: Record<string, CoreHandler> = {
     saveRegistraties(feestId, registraties),
 
   'resultaat:build': (feestId) => buildResultaat(feestId),
-  'inzichten:build': () => buildInzichten(),
-  'btw:periode': ({ van, tot }) => btwPeriode(van, tot),
+  'inzichten:build': (p) => buildInzichten(p?.van, p?.tot),
   'snapshot:build': () => buildPrijsMomentopname(),
 
   'instellingen:get': () => getInstellingen(),

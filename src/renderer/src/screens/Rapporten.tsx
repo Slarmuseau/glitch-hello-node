@@ -12,7 +12,6 @@ type Report =
   | 'per_drank'
   | 'per_feest'
   | 'korting'
-  | 'btw'
 
 const REPORTS: { value: Report; label: string }[] = [
   { value: 'feest_ranking', label: 'Ranking van feesten (beste → slechtste marge)' },
@@ -20,8 +19,7 @@ const REPORTS: { value: Report; label: string }[] = [
   { value: 'per_type', label: 'Per type feest' },
   { value: 'per_drank', label: 'Per drank (overall)' },
   { value: 'per_feest', label: 'Per feest (detail)' },
-  { value: 'korting', label: 'Korting-overzicht' },
-  { value: 'btw', label: 'BTW-overzicht' }
+  { value: 'korting', label: 'Korting-overzicht' }
 ]
 
 function MargeBadge({ value }: { value: number }): JSX.Element {
@@ -36,31 +34,41 @@ function MargeBadge({ value }: { value: number }): JSX.Element {
 const TH = 'px-3 py-2 font-medium'
 const TD = 'px-3 py-2.5'
 
+function rangeVoor(type: string, jaar: number): { van?: string; tot?: string } {
+  if (type === 'alles') return {}
+  if (type === 'jaar') return { van: `${jaar}-01-01`, tot: `${jaar}-12-31` }
+  const q = Number(type[1])
+  const s = (q - 1) * 3 + 1
+  const e = s + 2
+  const laatste = new Date(jaar, e, 0).getDate()
+  const mm = (m: number): string => String(m).padStart(2, '0')
+  return { van: `${jaar}-${mm(s)}-01`, tot: `${jaar}-${mm(e)}-${laatste}` }
+}
+
 export default function Rapporten(): JSX.Element {
-  const inzichten = useData(() => api.inzichten.build())
+  const nu = new Date()
+  const [periodeType, setPeriodeType] = useState('alles')
+  const [jaar, setJaar] = useState(nu.getFullYear())
+  const { van, tot } = rangeVoor(periodeType, jaar)
+
+  const inzichten = useData(() => api.inzichten.build(van, tot), [van, tot])
   const feesten = useData(() => api.feesten.overzicht())
   const [report, setReport] = useState<Report>('feest_ranking')
   const [feestId, setFeestId] = useState<number | null>(null)
 
-  if (inzichten.loading || feesten.loading) return <div className="text-ink-faint">Laden…</div>
+  if (feesten.loading) return <div className="text-ink-faint">Laden…</div>
+  const heeftData = (feesten.data ?? []).some((f) => f.geregistreerd)
   const d = inzichten.data
-  if (!d || d.aantal_feesten === 0) {
-    return (
-      <div>
-        <PageHeader title="Rapporten" subtitle="Vraag specifieke rapporten op." />
-        <EmptyState title="Nog te weinig gegevens">
-          Registreer eerst enkele feesten; dan kun je hier rapporten samenstellen.
-        </EmptyState>
-      </div>
-    )
-  }
 
-  return (
-    <div>
-      <PageHeader
-        title="Rapporten"
-        subtitle="Kies een rapport. De cijfers spreken voor zich."
-        actions={
+  const jaren: number[] = []
+  for (let y = nu.getFullYear(); y >= nu.getFullYear() - 5; y--) jaren.push(y)
+
+  const kop = (
+    <PageHeader
+      title="Rapporten"
+      subtitle="Kies een rapport en een periode. De cijfers spreken voor zich."
+      actions={
+        <div className="flex items-end gap-2">
           <select
             className="input w-auto"
             value={report}
@@ -72,8 +80,59 @@ export default function Rapporten(): JSX.Element {
               </option>
             ))}
           </select>
-        }
-      />
+          <select
+            className="input w-auto"
+            value={periodeType}
+            onChange={(e) => setPeriodeType(e.target.value)}
+          >
+            <option value="alles">Alle periodes</option>
+            <option value="jaar">Heel jaar</option>
+            <option value="q1">1ste kwartaal</option>
+            <option value="q2">2de kwartaal</option>
+            <option value="q3">3de kwartaal</option>
+            <option value="q4">4de kwartaal</option>
+          </select>
+          {periodeType !== 'alles' && (
+            <select className="input w-auto" value={jaar} onChange={(e) => setJaar(Number(e.target.value))}>
+              {jaren.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+      }
+    />
+  )
+
+  if (!heeftData) {
+    return (
+      <div>
+        {kop}
+        <EmptyState title="Nog te weinig gegevens">
+          Registreer eerst enkele feesten; dan kun je hier rapporten samenstellen.
+        </EmptyState>
+      </div>
+    )
+  }
+
+  if (inzichten.loading || !d) return <div>{kop}<div className="text-ink-faint">Laden…</div></div>
+
+  if (d.aantal_feesten === 0) {
+    return (
+      <div>
+        {kop}
+        <EmptyState title="Geen geregistreerde feesten in deze periode">
+          Kies een andere periode.
+        </EmptyState>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      {kop}
 
       {report === 'feest_ranking' && (
         <Card className="p-0 overflow-hidden">
@@ -238,156 +297,12 @@ export default function Rapporten(): JSX.Element {
         </Card>
       )}
 
-      {report === 'btw' && <BtwRapport />}
-
       {report === 'per_feest' && (
         <PerFeestRapport
           feesten={(feesten.data ?? []).filter((f) => f.geregistreerd)}
           feestId={feestId}
           onPick={setFeestId}
         />
-      )}
-    </div>
-  )
-}
-
-function rangeVoor(jaar: number, kwartaal: string): [string, string] {
-  if (kwartaal === 'jaar') return [`${jaar}-01-01`, `${jaar}-12-31`]
-  const q = Number(kwartaal[1])
-  const startMaand = (q - 1) * 3 + 1
-  const eindMaand = startMaand + 2
-  const laatste = new Date(jaar, eindMaand, 0).getDate()
-  const mm = (m: number): string => String(m).padStart(2, '0')
-  return [`${jaar}-${mm(startMaand)}-01`, `${jaar}-${mm(eindMaand)}-${laatste}`]
-}
-
-function BtwRapport(): JSX.Element {
-  const nu = new Date()
-  const [jaar, setJaar] = useState(nu.getFullYear())
-  const [kwartaal, setKwartaal] = useState(`Q${Math.floor(nu.getMonth() / 3) + 1}`)
-  const [van, tot] = rangeVoor(jaar, kwartaal)
-  const data = useData(() => api.btw.periode(van, tot), [van, tot])
-
-  const jaren: number[] = []
-  for (let y = nu.getFullYear(); y >= nu.getFullYear() - 5; y--) jaren.push(y)
-
-  return (
-    <div>
-      <Card className="mb-4">
-        <div className="flex flex-wrap items-end gap-3">
-          <div>
-            <label className="label">Jaar</label>
-            <select className="input w-auto" value={jaar} onChange={(e) => setJaar(Number(e.target.value))}>
-              {jaren.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label">Periode</label>
-            <select
-              className="input w-auto"
-              value={kwartaal}
-              onChange={(e) => setKwartaal(e.target.value)}
-            >
-              <option value="Q1">1ste kwartaal (jan–mrt)</option>
-              <option value="Q2">2de kwartaal (apr–jun)</option>
-              <option value="Q3">3de kwartaal (jul–sep)</option>
-              <option value="Q4">4de kwartaal (okt–dec)</option>
-              <option value="jaar">Heel jaar</option>
-            </select>
-          </div>
-          <div className="text-xs text-ink-faint pb-2">
-            {formatDatum(van)} – {formatDatum(tot)}
-          </div>
-        </div>
-      </Card>
-
-      {data.loading && <div className="text-ink-faint">Laden…</div>}
-      {data.data && (
-        <>
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <Card>
-              <div className="text-xs uppercase tracking-wide text-ink-faint">BTW op verkoop</div>
-              <div className="text-2xl font-display tabular mt-1">
-                {formatEuro(data.data.verkoop_btw)}
-              </div>
-            </Card>
-            <Card>
-              <div className="text-xs uppercase tracking-wide text-ink-faint">BTW op inkoop</div>
-              <div className="text-2xl font-display tabular mt-1">
-                {formatEuro(data.data.inkoop_btw)}
-              </div>
-            </Card>
-            <Card className="border-amber-200 bg-amber-50/40">
-              <div className="text-xs uppercase tracking-wide text-ink-faint">Verschuldigde BTW</div>
-              <div className="text-2xl font-display tabular mt-1 text-amber-700">
-                {formatEuro(data.data.verschuldigd)}
-              </div>
-            </Card>
-          </div>
-
-          {data.data.feesten.length === 0 ? (
-            <EmptyState title="Geen geregistreerde feesten in deze periode" />
-          ) : (
-            <>
-              <Card className="p-0 overflow-hidden mb-4">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-xs uppercase tracking-wide text-ink-faint border-b border-cream-deep">
-                      <th className={TH}>Inkoop per BTW-tarief</th>
-                      <th className={`${TH} text-right`}>Inkoop incl. BTW</th>
-                      <th className={`${TH} text-right`}>Waarvan BTW</th>
-                      <th className={`${TH} text-right`}>Excl. BTW</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.data.per_tarief.map((t) => (
-                      <tr key={t.tarief} className="border-b border-cream-deep/60 last:border-0">
-                        <td className={`${TD} text-ink`}>{t.tarief}%</td>
-                        <td className={`${TD} text-right tabular`}>{formatEuro(t.inkoop_incl)}</td>
-                        <td className={`${TD} text-right tabular`}>{formatEuro(t.btw)}</td>
-                        <td className={`${TD} text-right tabular text-ink-soft`}>
-                          {formatEuro(t.inkoop_incl - t.btw)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </Card>
-
-              <Card className="p-0 overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-xs uppercase tracking-wide text-ink-faint border-b border-cream-deep">
-                      <th className={TH}>Feest</th>
-                      <th className={TH}>Datum</th>
-                      <th className={`${TH} text-right`}>BTW verkoop</th>
-                      <th className={`${TH} text-right`}>BTW inkoop</th>
-                      <th className={`${TH} text-right`}>Verschuldigd</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.data.feesten.map((f) => (
-                      <tr key={f.feest_id} className="border-b border-cream-deep/60 last:border-0">
-                        <td className={`${TD} text-ink`}>{f.naam}</td>
-                        <td className={`${TD} text-ink-soft`}>{formatDatum(f.datum)}</td>
-                        <td className={`${TD} text-right tabular`}>{formatEuro(f.verkoop_btw)}</td>
-                        <td className={`${TD} text-right tabular`}>{formatEuro(f.inkoop_btw)}</td>
-                        <td className={`${TD} text-right tabular`}>{formatEuro(f.verschuldigd)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </Card>
-            </>
-          )}
-          <p className="text-xs text-ink-faint mt-3">
-            Alle prijzen incl. BTW. Verschuldigd = BTW op verkoop − BTW op inkoop.
-          </p>
-        </>
       )}
     </div>
   )
