@@ -65,4 +65,20 @@ describe('computeFeestResultaat', () => {
   it('reports the euro result vs cost', () => {
     expect(r.resultaat).toBeCloseTo(1640 - r.totaal_inkoopkost, 6)
   })
+
+  it('with no discount, totaal_korting is zero', () => {
+    expect(r.totaal_korting).toBe(0)
+  })
+
+  it('a discount lowers the forfait revenue and the margin', () => {
+    const metKorting: AttributieInput[] = [
+      { forfait_naam: 'Streek', aantal_personen: 80, forfaitprijs_per_persoon: 18, korting_pct: 10 },
+      { forfait_naam: 'Fris', aantal_personen: 20, forfaitprijs_per_persoon: 10, korting_pct: 0 }
+    ]
+    const rk = computeFeestResultaat(regels, metKorting, 0.05)
+    // 80*18*0.9 = 1296 ; 20*10 = 200 -> 1496 ; korting = 1640 - 1496 = 144
+    expect(rk.forfait_omzet).toBeCloseTo(1496, 6)
+    expect(rk.totaal_korting).toBeCloseTo(144, 6)
+    expect(rk.forfaitmarge).toBeLessThan(r.forfaitmarge)
+  })
 })

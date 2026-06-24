@@ -104,6 +104,7 @@ export function buildResultaat(feestId: number): ResultaatData | null {
       forfait_naam: t.forfait_naam,
       aantal_personen: t.aantal_personen,
       forfaitprijs_per_persoon: t.forfaitprijs_per_persoon,
+      korting_pct: t.korting_pct ?? 0,
       verwachte_consumpties_per_persoon: forfait?.verwachte_consumpties_per_persoon ?? null
     }
   })

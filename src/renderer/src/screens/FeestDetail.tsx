@@ -7,7 +7,7 @@ import { PageHeader, Card, Field, Badge } from '../components/ui'
 import { NumberInput } from '../components/NumberInput'
 import { useToast } from '../components/Toast'
 import { MobielModal } from '../components/MobielModal'
-import { suggestedForfaitPrijs, type Drank, type Forfait, type Vat } from '@shared/domain'
+import { suggestedForfaitPrijs, formatEuro, type Drank, type Forfait, type Vat } from '@shared/domain'
 
 export default function FeestDetail(): JSX.Element {
   const { id } = useParams()
@@ -204,7 +204,7 @@ function FeestForm({
           <Field label="Publiek (optioneel)">
             <input className="input" value={publiek} onChange={(e) => setPubliek(e.target.value)} />
           </Field>
-          <Field label="Doelmarge (%)" hint="Lager dan standaard = korting voor dit feest">
+          <Field label="Doel (%)" hint="Doel voor dit feest: % boven verkoop per glas">
             <NumberInput
               value={doelmarge * 100}
               onCommit={(n) => setDoelmarge(n / 100)}
@@ -237,7 +237,8 @@ function FeestForm({
                   forfait_id: forfaits[0]?.id ?? null,
                   forfait_naam: forfaits[0]?.naam ?? '',
                   aantal_personen: 0,
-                  forfaitprijs_per_persoon: forfaits[0] ? forfaitPrijs(forfaits[0], dranken) : 0
+                  forfaitprijs_per_persoon: forfaits[0] ? forfaitPrijs(forfaits[0], dranken) : 0,
+                  korting_pct: 0
                 }
               ])
             }
@@ -253,7 +254,7 @@ function FeestForm({
         <div className="space-y-3">
           {toewijzingen.map((t, i) => (
             <div key={i} className="grid grid-cols-12 gap-3 items-end">
-              <div className="col-span-5">
+              <div className="col-span-4">
                 <Field label="Forfait">
                   <select
                     className="input"
@@ -286,7 +287,7 @@ function FeestForm({
                   </select>
                 </Field>
               </div>
-              <div className="col-span-3">
+              <div className="col-span-2">
                 <Field label="Personen">
                   <NumberInput
                     value={t.aantal_personen}
@@ -298,7 +299,7 @@ function FeestForm({
                   />
                 </Field>
               </div>
-              <div className="col-span-3">
+              <div className="col-span-2">
                 <Field label="Prijs / persoon">
                   <NumberInput
                     value={t.forfaitprijs_per_persoon}
@@ -308,6 +309,26 @@ function FeestForm({
                       )
                     }
                     suffix="€"
+                  />
+                </Field>
+              </div>
+              <div className="col-span-3">
+                <Field
+                  label="Korting"
+                  hint={
+                    (t.korting_pct ?? 0) > 0
+                      ? `netto ${formatEuro(t.forfaitprijs_per_persoon * (1 - (t.korting_pct ?? 0) / 100))}/pers`
+                      : 'korting voor de klant'
+                  }
+                >
+                  <NumberInput
+                    value={t.korting_pct ?? 0}
+                    onCommit={(n) =>
+                      setToewijzingen((prev) =>
+                        prev.map((x, j) => (j === i ? { ...x, korting_pct: n } : x))
+                      )
+                    }
+                    suffix="%"
                   />
                 </Field>
               </div>

@@ -79,6 +79,8 @@ export interface Toewijzing {
   forfait_naam: string
   aantal_personen: number
   forfaitprijs_per_persoon: number
+  /** Discount the customer gets on this forfait's price, in percent (0..100). */
+  korting_pct: number
 }
 
 export interface Feest {

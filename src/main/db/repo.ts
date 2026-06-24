@@ -299,7 +299,13 @@ export interface FeestInput {
   doelmarge: number
   korting_reden?: string | null
   prijs_momentopname: PrijsMomentopname
-  toewijzingen: { forfait_id: number | null; forfait_naam: string; aantal_personen: number; forfaitprijs_per_persoon: number }[]
+  toewijzingen: {
+    forfait_id: number | null
+    forfait_naam: string
+    aantal_personen: number
+    forfaitprijs_per_persoon: number
+    korting_pct?: number
+  }[]
 }
 
 export function upsertFeest(f: FeestInput): FeestVol {
@@ -332,11 +338,18 @@ export function upsertFeest(f: FeestInput): FeestVol {
     }
     db.prepare('DELETE FROM toewijzingen WHERE feest_id=?').run(id)
     const ins = db.prepare(
-      `INSERT INTO toewijzingen (feest_id, forfait_id, forfait_naam, aantal_personen, forfaitprijs_per_persoon)
-       VALUES (?,?,?,?,?)`
+      `INSERT INTO toewijzingen (feest_id, forfait_id, forfait_naam, aantal_personen, forfaitprijs_per_persoon, korting_pct)
+       VALUES (?,?,?,?,?,?)`
     )
     for (const t of f.toewijzingen) {
-      ins.run(id, t.forfait_id, t.forfait_naam, t.aantal_personen, t.forfaitprijs_per_persoon)
+      ins.run(
+        id,
+        t.forfait_id,
+        t.forfait_naam,
+        t.aantal_personen,
+        t.forfaitprijs_per_persoon,
+        t.korting_pct ?? 0
+      )
     }
     return id
   })

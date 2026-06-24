@@ -206,13 +206,12 @@ export function buildInzichten(): Inzichten {
       resultaat: r.resultaat
     })
 
-    if (f.doelmarge < inst.standaard_doelmarge) {
-      const weggegeven = r.forfait_omzet * (inst.standaard_doelmarge - f.doelmarge)
-      kortingTotaal += weggegeven
+    if (r.totaal_korting > 0) {
+      kortingTotaal += r.totaal_korting
       const reden = f.korting_reden?.trim() || 'geen reden opgegeven'
       const k = korting.get(reden) ?? { feesten: 0, weggegeven: 0 }
       k.feesten += 1
-      k.weggegeven += weggegeven
+      k.weggegeven += r.totaal_korting
       korting.set(reden, k)
     }
   }

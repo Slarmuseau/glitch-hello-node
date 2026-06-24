@@ -80,7 +80,8 @@ CREATE TABLE IF NOT EXISTS toewijzingen (
   forfait_id INTEGER REFERENCES forfaits(id) ON DELETE SET NULL,
   forfait_naam TEXT NOT NULL DEFAULT '',
   aantal_personen INTEGER NOT NULL DEFAULT 0,
-  forfaitprijs_per_persoon REAL NOT NULL DEFAULT 0
+  forfaitprijs_per_persoon REAL NOT NULL DEFAULT 0,
+  korting_pct REAL NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS consumptieregistraties (

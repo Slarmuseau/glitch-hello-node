@@ -64,6 +64,7 @@ export interface Toewijzing {
   forfait_naam: string
   aantal_personen: number
   forfaitprijs_per_persoon: number
+  korting_pct?: number
 }
 
 export interface Registratie {

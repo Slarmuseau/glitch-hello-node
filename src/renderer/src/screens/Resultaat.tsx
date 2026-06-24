@@ -73,6 +73,11 @@ export default function Resultaat(): JSX.Element {
             <div className="text-xs text-ink-faint mt-1">
               2de inzicht — marge op inkoop: {formatPercent(r.inkoopmarge)} ({formatEuro(r.resultaat)})
             </div>
+            {r.totaal_korting > 0 && (
+              <div className="text-xs text-clay-500 mt-1">
+                korting aan de klant: {formatEuro(r.totaal_korting)}
+              </div>
+            )}
           </div>
         </div>
       </Card>

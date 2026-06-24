@@ -213,11 +213,17 @@ export function seedDemoData(): void {
     type_feest: 'scoutsfeest',
     datum: '2026-04-12',
     publiek: 'Jong gezelschap',
-    doelmarge: 0.0,
+    doelmarge: 0.05,
     korting_reden: 'sociaal doel — jeugdvereniging',
     prijs_momentopname: snapshot,
     toewijzingen: [
-      { forfait_id: basisId, forfait_naam: 'Forfait Basis', aantal_personen: 60, forfaitprijs_per_persoon: 12 }
+      {
+        forfait_id: basisId,
+        forfait_naam: 'Forfait Basis',
+        aantal_personen: 60,
+        forfaitprijs_per_persoon: 12,
+        korting_pct: 10
+      }
     ]
   })
   const scoutsReg: Registratie[] = [

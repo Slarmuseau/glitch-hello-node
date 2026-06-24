@@ -28,6 +28,8 @@ export interface AttributieInput {
   forfait_naam: string
   aantal_personen: number
   forfaitprijs_per_persoon: number
+  /** Discount the customer gets on this forfait's price, in percent (0..100). */
+  korting_pct?: number | null
   /** Expected consumptions per head for this tier, if set. */
   verwachte_consumpties_per_persoon?: number | null
 }
@@ -64,6 +66,8 @@ export interface FeestResultaat {
   inkoopmarge: number
   /** Profit in euro vs purchase cost: forfait_omzet - inkoopkost. */
   resultaat: number
+  /** Total discount given to customers, in euro (before-discount minus actual). */
+  totaal_korting: number
 
   inkoopkost_per_persoon: number
   /** Forfait price per head matching the per-glass value plus the target uplift. */
@@ -89,10 +93,18 @@ export function computeFeestResultaat(
   }))
 
   const aantal_personen = attributies.reduce((s, a) => s + a.aantal_personen, 0)
+  // Revenue uses the discounted forfait price (the discount is given to the
+  // customer). The discount thus lowers the realized margin.
   const forfait_omzet = attributies.reduce(
+    (s, a) =>
+      s + a.aantal_personen * a.forfaitprijs_per_persoon * (1 - (a.korting_pct ?? 0) / 100),
+    0
+  )
+  const bruto_forfait_omzet = attributies.reduce(
     (s, a) => s + a.aantal_personen * a.forfaitprijs_per_persoon,
     0
   )
+  const totaal_korting = bruto_forfait_omzet - forfait_omzet
   const totaal_inkoopkost = verrijkteRegels.reduce((s, r) => s + r.inkoopkost, 0)
   const totaal_consumpties = verrijkteRegels.reduce((s, r) => s + r.consumpties, 0)
   const alacarte_omzet = verrijkteRegels.reduce((s, r) => s + r.alacarte_omzet, 0)
@@ -121,6 +133,7 @@ export function computeFeestResultaat(
     marge_verschil: marge - doelmarge,
     inkoopmarge: inkoopmargeOpOmzet(forfait_omzet, totaal_inkoopkost),
     resultaat: forfait_omzet - totaal_inkoopkost,
+    totaal_korting,
     inkoopkost_per_persoon,
     hindsight_prijs_per_persoon: alacarte_per_persoon * (1 + doelmarge),
     verwachte_consumpties_totaal,
