@@ -52,6 +52,7 @@ export default function VolumesVerpakking(): JSX.Element {
               <th className="px-4 py-3 font-medium">Drank</th>
               <th className="px-4 py-3 font-medium w-32">Schenkwijze</th>
               <th className="px-4 py-3 font-medium w-28">Glaasgrootte</th>
+              <th className="px-4 py-3 font-medium w-28">BTW inkoop</th>
               <th className="px-4 py-3 font-medium">Verpakking</th>
             </tr>
           </thead>
@@ -81,6 +82,17 @@ export default function VolumesVerpakking(): JSX.Element {
                     onCommit={(n) => save({ ...d, glaasgrootte_cl: n })}
                     suffix="cl"
                   />
+                </td>
+                <td className="px-4 py-2.5">
+                  <select
+                    className="input"
+                    value={d.btw_inkoop ?? 21}
+                    onChange={(e) => save({ ...d, btw_inkoop: Number(e.target.value) })}
+                  >
+                    <option value={21}>21%</option>
+                    <option value={6}>6%</option>
+                    <option value={0}>0%</option>
+                  </select>
                 </td>
                 <td className="px-4 py-2.5">
                   {d.schenkwijze === 'uit_fles' && (

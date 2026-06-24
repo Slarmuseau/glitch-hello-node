@@ -147,7 +147,9 @@ export function seedDemoData(): void {
       inkoopprijs_per_consumptie: d.inkoopprijs_per_consumptie ?? null,
       fles_inhoud_cl: d.fles_inhoud_cl ?? null,
       inkoopprijs_per_fles: d.inkoopprijs_per_fles ?? null,
-      vat_id: d.vat ? vatIds.get(d.vat) ?? null : null
+      vat_id: d.vat ? vatIds.get(d.vat) ?? null : null,
+      // Belgian habit: non-alcoholic purchases at 6%, the rest at 21%.
+      btw_inkoop: ['Soft', 'Warm', 'Alcoholvrij bier', 'Mocktails'].includes(d.categorie) ? 6 : 21
     })
     drankIds.set(d.naam, saved.id)
   }

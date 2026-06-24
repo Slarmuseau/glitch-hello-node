@@ -12,6 +12,7 @@ type Report =
   | 'per_drank'
   | 'per_feest'
   | 'korting'
+  | 'btw'
 
 const REPORTS: { value: Report; label: string }[] = [
   { value: 'feest_ranking', label: 'Ranking van feesten (beste → slechtste marge)' },
@@ -19,7 +20,8 @@ const REPORTS: { value: Report; label: string }[] = [
   { value: 'per_type', label: 'Per type feest' },
   { value: 'per_drank', label: 'Per drank (overall)' },
   { value: 'per_feest', label: 'Per feest (detail)' },
-  { value: 'korting', label: 'Korting-overzicht' }
+  { value: 'korting', label: 'Korting-overzicht' },
+  { value: 'btw', label: 'BTW-overzicht' }
 ]
 
 function MargeBadge({ value }: { value: number }): JSX.Element {
@@ -234,6 +236,57 @@ export default function Rapporten(): JSX.Element {
             </tbody>
           </table>
         </Card>
+      )}
+
+      {report === 'btw' && (
+        <div>
+          <Card className="mb-4 bg-amber-50/60 border-amber-100">
+            <p className="text-sm text-ink-soft">
+              Alle prijzen zijn incl. BTW. Verkoop-BTW {d.btw.verkoop_tarief}% op de forfait-omzet;
+              inkoop-BTW per tarief. Verschuldigd = verkoop-BTW − inkoop-BTW.
+            </p>
+          </Card>
+          <div className="grid grid-cols-3 gap-4 mb-4">
+            <Card>
+              <div className="text-xs uppercase tracking-wide text-ink-faint">BTW op verkoop</div>
+              <div className="text-2xl font-display tabular mt-1">{formatEuro(d.btw.verkoop_btw)}</div>
+            </Card>
+            <Card>
+              <div className="text-xs uppercase tracking-wide text-ink-faint">BTW op inkoop</div>
+              <div className="text-2xl font-display tabular mt-1">{formatEuro(d.btw.inkoop_btw)}</div>
+            </Card>
+            <Card>
+              <div className="text-xs uppercase tracking-wide text-ink-faint">Verschuldigde BTW</div>
+              <div className="text-2xl font-display tabular mt-1 text-amber-700">
+                {formatEuro(d.btw.verschuldigd)}
+              </div>
+            </Card>
+          </div>
+          <Card className="p-0 overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs uppercase tracking-wide text-ink-faint border-b border-cream-deep">
+                  <th className={TH}>Inkoop per BTW-tarief</th>
+                  <th className={`${TH} text-right`}>Inkoop incl. BTW</th>
+                  <th className={`${TH} text-right`}>Waarvan BTW</th>
+                  <th className={`${TH} text-right`}>Excl. BTW</th>
+                </tr>
+              </thead>
+              <tbody>
+                {d.btw.per_tarief.map((t) => (
+                  <tr key={t.tarief} className="border-b border-cream-deep/60 last:border-0">
+                    <td className={`${TD} text-ink`}>{t.tarief}%</td>
+                    <td className={`${TD} text-right tabular`}>{formatEuro(t.inkoop_incl)}</td>
+                    <td className={`${TD} text-right tabular`}>{formatEuro(t.btw)}</td>
+                    <td className={`${TD} text-right tabular text-ink-soft`}>
+                      {formatEuro(t.inkoop_incl - t.btw)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+        </div>
       )}
 
       {report === 'per_feest' && (

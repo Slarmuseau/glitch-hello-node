@@ -104,9 +104,10 @@ function tierStats(f: Forfait, dranken: Drank[], vmap: Map<number, Vat>) {
   const menus = toegestaan.map((d) => d.menuprijs)
   const gemMenu = menus.length ? menus.reduce((a, b) => a + b, 0) / menus.length : 0
   const gemKost = kosten.length ? kosten.reduce((a, b) => a + b, 0) / kosten.length : 0
-  const worstKost = kosten.length ? Math.max(...kosten) : 0
-  const worstDrank = toegestaan[kosten.indexOf(worstKost)]
-  return { toegestaan, gemMenu, gemKost, worstKost, worstDrank }
+  // The risk in a forfait is the most expensive allowed drink at its SALE price.
+  const worstMenu = menus.length ? Math.max(...menus) : 0
+  const worstDrank = toegestaan[menus.indexOf(worstMenu)]
+  return { toegestaan, gemMenu, gemKost, worstMenu, worstDrank }
 }
 
 function prijsVan(f: Forfait, gemMenu: number): { prijs: number; bron: string } {
@@ -132,7 +133,7 @@ function ForfaitKaart({
   doelmarge: number
   onEdit: () => void
 }): JSX.Element {
-  const { toegestaan, gemMenu, worstKost, worstDrank } = tierStats(forfait, dranken, vmap)
+  const { toegestaan, gemMenu, worstMenu, worstDrank } = tierStats(forfait, dranken, vmap)
   const { prijs, bron } = prijsVan(forfait, gemMenu)
   const buffer = bufferConsumptiesPerHoofd(prijs, gemMenu, doelmarge)
 
@@ -160,8 +161,8 @@ function ForfaitKaart({
           <div className="text-xs text-ink-faint">prijs per glas</div>
         </div>
         <div>
-          <div className="text-xs uppercase tracking-wide text-ink-faint">Duurste cons.</div>
-          <div className="text-2xl font-display tabular text-clay-500 mt-1">{formatEuro(worstKost)}</div>
+          <div className="text-xs uppercase tracking-wide text-ink-faint">Duurste cons. (verkoop)</div>
+          <div className="text-2xl font-display tabular text-clay-500 mt-1">{formatEuro(worstMenu)}</div>
           <div className="text-xs text-ink-faint truncate">{worstDrank?.naam ?? '—'} (risico)</div>
         </div>
         <div>

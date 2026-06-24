@@ -24,6 +24,16 @@ function runMigrations(database: Database.Database): void {
   if (!toewijzingen.includes('korting_pct')) {
     database.exec('ALTER TABLE toewijzingen ADD COLUMN korting_pct REAL NOT NULL DEFAULT 0')
   }
+
+  const dranken = kolommen('dranken')
+  if (!dranken.includes('btw_inkoop')) {
+    database.exec('ALTER TABLE dranken ADD COLUMN btw_inkoop REAL NOT NULL DEFAULT 21')
+  }
+
+  const instellingen = kolommen('instellingen')
+  if (!instellingen.includes('btw_verkoop')) {
+    database.exec('ALTER TABLE instellingen ADD COLUMN btw_verkoop REAL NOT NULL DEFAULT 21')
+  }
 }
 
 export function getDb(): Database.Database {

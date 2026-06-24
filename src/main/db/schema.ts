@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS instellingen (
   id INTEGER PRIMARY KEY CHECK (id = 1),
   standaard_doelmarge REAL NOT NULL DEFAULT 0.05,
   marge_conventie TEXT NOT NULL DEFAULT 'op_de_omzet',
+  btw_verkoop REAL NOT NULL DEFAULT 21,
   bedrijfsnaam TEXT NOT NULL DEFAULT '',
   bedrijfsgegevens TEXT NOT NULL DEFAULT '',
   logo_pad TEXT,
@@ -44,6 +45,7 @@ CREATE TABLE IF NOT EXISTS dranken (
   fles_inhoud_cl REAL,
   inkoopprijs_per_fles REAL,
   vat_id INTEGER REFERENCES vaten(id) ON DELETE SET NULL,
+  btw_inkoop REAL NOT NULL DEFAULT 21,
   sort_order INTEGER NOT NULL DEFAULT 0
 );
 

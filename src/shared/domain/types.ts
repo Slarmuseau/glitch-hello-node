@@ -41,6 +41,9 @@ export interface Drank {
   // schenkwijze === 'uit_vat'
   /** Links to the Vat (keg) this draft beer pours from. */
   vat_id?: number | null
+
+  /** Purchase VAT rate in percent (usually 21, sometimes 6). Prices are incl. BTW. */
+  btw_inkoop?: number | null
 }
 
 /** A barrel / keg. Store only what is measured; derive the rest. */
@@ -106,6 +109,8 @@ export type PrijsMomentopname = Record<number, PrijsSnapshotRegel>
 export interface Instellingen {
   standaard_doelmarge: number // 0..1
   marge_conventie: MargeConventie
+  /** Sales VAT rate in percent (drinks: 21). Prices are incl. BTW. */
+  btw_verkoop: number
   bedrijfsnaam: string
   bedrijfsgegevens: string
   logo_pad?: string | null

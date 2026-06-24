@@ -29,7 +29,8 @@ function mapDrank(row: any): Drank {
     inkoopprijs_per_consumptie: row.inkoopprijs_per_consumptie,
     fles_inhoud_cl: row.fles_inhoud_cl,
     inkoopprijs_per_fles: row.inkoopprijs_per_fles,
-    vat_id: row.vat_id
+    vat_id: row.vat_id,
+    btw_inkoop: row.btw_inkoop
   }
 }
 
@@ -104,6 +105,7 @@ export function upsertDrank(d: Omit<Drank, 'id'> & { id?: number }): Drank {
     fles_inhoud_cl: d.fles_inhoud_cl ?? null,
     inkoopprijs_per_fles: d.inkoopprijs_per_fles ?? null,
     vat_id: d.vat_id ?? null,
+    btw_inkoop: d.btw_inkoop ?? 21,
     id: d.id
   }
   if (d.id) {
@@ -111,16 +113,16 @@ export function upsertDrank(d: Omit<Drank, 'id'> & { id?: number }): Drank {
       `UPDATE dranken SET naam=@naam, categorie=@categorie, menuprijs=@menuprijs,
         glaasgrootte_cl=@glaasgrootte_cl, schenkwijze=@schenkwijze, is_cocktail=@is_cocktail,
         inkoopprijs_per_consumptie=@inkoopprijs_per_consumptie, fles_inhoud_cl=@fles_inhoud_cl,
-        inkoopprijs_per_fles=@inkoopprijs_per_fles, vat_id=@vat_id WHERE id=@id`
+        inkoopprijs_per_fles=@inkoopprijs_per_fles, vat_id=@vat_id, btw_inkoop=@btw_inkoop WHERE id=@id`
     ).run(params)
     return mapDrank(db.prepare('SELECT * FROM dranken WHERE id=?').get(d.id))
   }
   const info = db
     .prepare(
       `INSERT INTO dranken (naam, categorie, menuprijs, glaasgrootte_cl, schenkwijze, is_cocktail,
-        inkoopprijs_per_consumptie, fles_inhoud_cl, inkoopprijs_per_fles, vat_id)
+        inkoopprijs_per_consumptie, fles_inhoud_cl, inkoopprijs_per_fles, vat_id, btw_inkoop)
        VALUES (@naam, @categorie, @menuprijs, @glaasgrootte_cl, @schenkwijze, @is_cocktail,
-        @inkoopprijs_per_consumptie, @fles_inhoud_cl, @inkoopprijs_per_fles, @vat_id)`
+        @inkoopprijs_per_consumptie, @fles_inhoud_cl, @inkoopprijs_per_fles, @vat_id, @btw_inkoop)`
     )
     .run(params)
   return mapDrank(db.prepare('SELECT * FROM dranken WHERE id=?').get(info.lastInsertRowid))
@@ -394,6 +396,7 @@ export function getInstellingen(): Instellingen {
   return {
     standaard_doelmarge: row.standaard_doelmarge,
     marge_conventie: row.marge_conventie,
+    btw_verkoop: row.btw_verkoop ?? 21,
     bedrijfsnaam: row.bedrijfsnaam,
     bedrijfsgegevens: row.bedrijfsgegevens,
     logo_pad: row.logo_pad,
@@ -409,7 +412,7 @@ export function saveInstellingen(s: Instellingen): Instellingen {
   getDb()
     .prepare(
       `UPDATE instellingen SET standaard_doelmarge=@standaard_doelmarge,
-        marge_conventie=@marge_conventie, bedrijfsnaam=@bedrijfsnaam,
+        marge_conventie=@marge_conventie, btw_verkoop=@btw_verkoop, bedrijfsnaam=@bedrijfsnaam,
         bedrijfsgegevens=@bedrijfsgegevens, logo_pad=@logo_pad, backup_locatie=@backup_locatie,
         categorieen=@categorieen,
         standaard_glaasgrootte_per_categorie=@standaard_glaasgrootte_per_categorie,
@@ -419,6 +422,7 @@ export function saveInstellingen(s: Instellingen): Instellingen {
     .run({
       standaard_doelmarge: s.standaard_doelmarge,
       marge_conventie: s.marge_conventie,
+      btw_verkoop: s.btw_verkoop ?? 21,
       bedrijfsnaam: s.bedrijfsnaam,
       bedrijfsgegevens: s.bedrijfsgegevens,
       logo_pad: s.logo_pad ?? null,
