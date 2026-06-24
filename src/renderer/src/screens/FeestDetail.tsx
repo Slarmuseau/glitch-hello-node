@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useState, useEffect, type ReactNode } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api, type FeestVol, type Toewijzing, type Registratie } from '../lib/api'
 import { useData } from '../lib/hooks'
@@ -31,6 +31,7 @@ export default function FeestDetail(): JSX.Element {
       dranken={dranken.data ?? []}
       vaten={vaten.data ?? []}
       onSaved={() => feest.reload()}
+      onRefresh={() => feest.reload()}
       onResultaat={() => nav(`/feesten/${feestId}/resultaat`)}
       onBlad={() => nav(`/feesten/${feestId}/blad`)}
       onDeleted={() => nav('/feesten')}
@@ -56,6 +57,7 @@ function FeestForm({
   dranken,
   vaten,
   onSaved,
+  onRefresh,
   onResultaat,
   onBlad,
   onDeleted,
@@ -66,6 +68,7 @@ function FeestForm({
   dranken: Drank[]
   vaten: Vat[]
   onSaved: () => void
+  onRefresh: () => void
   onResultaat: () => void
   onBlad: () => void
   onDeleted: () => void
@@ -90,6 +93,22 @@ function FeestForm({
     for (const r of feest.registraties) m.set(r.drank_id, { ...r })
     return m
   })
+
+  // Re-sync the form from the latest saved data — e.g. after the phone added
+  // input and the user clicks "Vernieuwen".
+  useEffect(() => {
+    setNaam(feest.naam)
+    setType(feest.type_feest)
+    setDatum(feest.datum)
+    setPubliek(feest.publiek ?? '')
+    setDoelmarge(feest.doelmarge)
+    setKortingReden(feest.korting_reden ?? '')
+    setToewijzingen(feest.toewijzingen.map((t) => ({ ...t })))
+    const m = new Map<number, Registratie>()
+    for (const r of feest.registraties) m.set(r.drank_id, { ...r })
+    setReg(m)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [feest])
 
   const setRegVeld = (drankId: number, veld: keyof Registratie, val: number): void =>
     setReg((prev) => {
@@ -361,6 +380,15 @@ function FeestForm({
             Registratie na het feest
           </h2>
           <div className="flex items-center gap-4">
+            <button
+              className="text-xs text-amber-700 hover:underline"
+              onClick={() => {
+                onRefresh()
+                toast('Vernieuwd — laatste invoer opgehaald')
+              }}
+            >
+              ↻ Vernieuwen
+            </button>
             <button className="text-xs text-amber-700 hover:underline" onClick={() => setMobielOpen(true)}>
               📱 Open op gsm
             </button>
