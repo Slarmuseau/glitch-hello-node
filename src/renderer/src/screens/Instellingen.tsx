@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { api } from '../lib/api'
 import { useData } from '../lib/hooks'
 import { PageHeader, Card, Field } from '../components/ui'
@@ -66,13 +66,10 @@ export default function Instellingen(): JSX.Element {
                 onBlur={(e) => save({ bedrijfsnaam: e.target.value })}
               />
             </Field>
-            <Field label="Logo-bestand (pad)" hint="Voor in de koptekst en op de afdrukbladen">
-              <input
-                className="input"
-                defaultValue={data.logo_pad ?? ''}
-                onBlur={(e) => save({ logo_pad: e.target.value || null })}
-              />
-            </Field>
+            <div>
+              <span className="label">Logo van de zaak</span>
+              <LogoKiezer logo={data.logo_pad} onChange={(v) => save({ logo_pad: v })} />
+            </div>
             <Field label="Adres en gegevens">
               <textarea
                 className="input min-h-[80px]"
@@ -169,6 +166,55 @@ export default function Instellingen(): JSX.Element {
           </button>
         </Card>
       </div>
+    </div>
+  )
+}
+
+function LogoKiezer({
+  logo,
+  onChange
+}: {
+  logo: string | null | undefined
+  onChange: (v: string | null) => void
+}): JSX.Element {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const kies = (file?: File): void => {
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => onChange(String(reader.result))
+    reader.readAsDataURL(file)
+  }
+  return (
+    <div>
+      {logo ? (
+        <img
+          src={logo}
+          alt="Logo"
+          className="h-16 max-w-[220px] object-contain mb-2 rounded-md border border-cream-deep bg-white p-1"
+        />
+      ) : (
+        <div className="text-xs text-ink-faint mb-2">Nog geen logo gekozen.</div>
+      )}
+      <div className="flex gap-2">
+        <button className="btn-outline" onClick={() => inputRef.current?.click()}>
+          Logo kiezen
+        </button>
+        {logo && (
+          <button className="btn-ghost" onClick={() => onChange(null)}>
+            Verwijderen
+          </button>
+        )}
+      </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => kies(e.target.files?.[0])}
+      />
+      <span className="block text-xs text-ink-faint mt-1">
+        Verschijnt op het afdrukblad en het overzicht. PNG of JPG.
+      </span>
     </div>
   )
 }

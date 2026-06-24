@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useData } from '../lib/hooks'
 import { TYPE_FEEST_LABEL, formatDatum } from '../lib/calc'
-import ttmbLogo from '../assets/ttmb-logo.png'
 import type { Drank } from '@shared/domain'
 
 // A printable post-party sheet: every relevant drink and barrel with blank
@@ -54,14 +53,18 @@ export default function PrintBlad(): JSX.Element {
       </div>
 
       {/* Header */}
-      <div className="flex items-start justify-between border-b border-ink/15 pb-4 mb-6">
+      <div className="flex items-end justify-between border-b border-ink/15 pb-4 mb-6">
         <div>
-          <h1 className="text-2xl font-display text-ink">
-            {inst.data?.bedrijfsnaam || 'Feestzaal'}
-          </h1>
-          <p className="text-sm text-ink-soft mt-1">Registratieblad — na het feest</p>
+          {inst.data?.logo_pad ? (
+            <img src={inst.data.logo_pad} alt="" className="h-16 max-w-[280px] object-contain mb-2" />
+          ) : (
+            <h1 className="text-2xl font-display text-ink">{inst.data?.bedrijfsnaam || 'Feestzaal'}</h1>
+          )}
+          <p className="text-sm text-ink-soft">Registratieblad — na het feest</p>
         </div>
-        <img src={ttmbLogo} alt="" className="h-8 w-auto opacity-80" />
+        {inst.data?.logo_pad && inst.data?.bedrijfsnaam && (
+          <div className="text-sm text-ink-soft">{inst.data.bedrijfsnaam}</div>
+        )}
       </div>
 
       <div className="grid grid-cols-3 gap-4 text-sm mb-8">
