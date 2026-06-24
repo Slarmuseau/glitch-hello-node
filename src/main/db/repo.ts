@@ -30,7 +30,8 @@ function mapDrank(row: any): Drank {
     fles_inhoud_cl: row.fles_inhoud_cl,
     inkoopprijs_per_fles: row.inkoopprijs_per_fles,
     vat_id: row.vat_id,
-    btw_inkoop: row.btw_inkoop
+    btw_inkoop: row.btw_inkoop,
+    btw_verkoop: row.btw_verkoop
   }
 }
 
@@ -106,6 +107,7 @@ export function upsertDrank(d: Omit<Drank, 'id'> & { id?: number }): Drank {
     inkoopprijs_per_fles: d.inkoopprijs_per_fles ?? null,
     vat_id: d.vat_id ?? null,
     btw_inkoop: d.btw_inkoop ?? 21,
+    btw_verkoop: d.btw_verkoop ?? 21,
     id: d.id
   }
   if (d.id) {
@@ -113,16 +115,17 @@ export function upsertDrank(d: Omit<Drank, 'id'> & { id?: number }): Drank {
       `UPDATE dranken SET naam=@naam, categorie=@categorie, menuprijs=@menuprijs,
         glaasgrootte_cl=@glaasgrootte_cl, schenkwijze=@schenkwijze, is_cocktail=@is_cocktail,
         inkoopprijs_per_consumptie=@inkoopprijs_per_consumptie, fles_inhoud_cl=@fles_inhoud_cl,
-        inkoopprijs_per_fles=@inkoopprijs_per_fles, vat_id=@vat_id, btw_inkoop=@btw_inkoop WHERE id=@id`
+        inkoopprijs_per_fles=@inkoopprijs_per_fles, vat_id=@vat_id, btw_inkoop=@btw_inkoop,
+        btw_verkoop=@btw_verkoop WHERE id=@id`
     ).run(params)
     return mapDrank(db.prepare('SELECT * FROM dranken WHERE id=?').get(d.id))
   }
   const info = db
     .prepare(
       `INSERT INTO dranken (naam, categorie, menuprijs, glaasgrootte_cl, schenkwijze, is_cocktail,
-        inkoopprijs_per_consumptie, fles_inhoud_cl, inkoopprijs_per_fles, vat_id, btw_inkoop)
+        inkoopprijs_per_consumptie, fles_inhoud_cl, inkoopprijs_per_fles, vat_id, btw_inkoop, btw_verkoop)
        VALUES (@naam, @categorie, @menuprijs, @glaasgrootte_cl, @schenkwijze, @is_cocktail,
-        @inkoopprijs_per_consumptie, @fles_inhoud_cl, @inkoopprijs_per_fles, @vat_id, @btw_inkoop)`
+        @inkoopprijs_per_consumptie, @fles_inhoud_cl, @inkoopprijs_per_fles, @vat_id, @btw_inkoop, @btw_verkoop)`
     )
     .run(params)
   return mapDrank(db.prepare('SELECT * FROM dranken WHERE id=?').get(info.lastInsertRowid))

@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS dranken (
   inkoopprijs_per_fles REAL,
   vat_id INTEGER REFERENCES vaten(id) ON DELETE SET NULL,
   btw_inkoop REAL NOT NULL DEFAULT 21,
+  btw_verkoop REAL NOT NULL DEFAULT 21,
   sort_order INTEGER NOT NULL DEFAULT 0
 );
 

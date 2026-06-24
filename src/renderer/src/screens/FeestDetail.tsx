@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, type ReactNode } from 'react'
+import { useMemo, useState, useEffect, useRef, type ReactNode } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api, type FeestVol, type Toewijzing, type Registratie } from '../lib/api'
 import { useData } from '../lib/hooks'
@@ -49,6 +49,45 @@ function forfaitPrijs(f: Forfait, dranken: Drank[]): number {
   return f.verwachte_consumpties_per_persoon != null
     ? suggestedForfaitPrijs(f.verwachte_consumpties_per_persoon, gemMenu)
     : 0
+}
+
+// A normalized fingerprint of the editable party state, used to tell whether
+// the PC form still matches the saved data (so auto-refresh never clobbers
+// in-progress edits).
+function snapshotVan(s: {
+  naam: string
+  type: string
+  datum: string
+  publiek?: string | null
+  doelmarge: number
+  kortingReden?: string | null
+  toewijzingen: Toewijzing[]
+  reg: Registratie[]
+}): string {
+  const t = s.toewijzingen
+    .map((x) => ({ fi: x.forfait_id ?? null, ap: x.aantal_personen || 0, pp: x.forfaitprijs_per_persoon || 0, k: x.korting_pct ?? 0 }))
+    .sort((a, b) => (a.fi ?? 0) - (b.fi ?? 0) || a.pp - b.pp || a.ap - b.ap)
+  const r = s.reg
+    .map((x) => ({
+      d: x.drank_id,
+      e: x.aantal_empties ?? null,
+      f: x.aantal_flessen ?? null,
+      v: x.aantal_vaten_geopend ?? null,
+      g: x.gewicht_laatste_vat_kg ?? null,
+      c: x.cocktail_tally ?? null
+    }))
+    .filter((x) => x.e != null || x.f != null || x.v != null || x.g != null || x.c != null)
+    .sort((a, b) => a.d - b.d)
+  return JSON.stringify({
+    naam: s.naam,
+    type: s.type,
+    datum: s.datum,
+    publiek: s.publiek || '',
+    doelmarge: s.doelmarge,
+    kortingReden: s.kortingReden || '',
+    t,
+    r
+  })
 }
 
 function FeestForm({
@@ -109,6 +148,43 @@ function FeestForm({
     setReg(m)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [feest])
+
+  // Safe auto-refresh: poll for changes (e.g. input from a phone) and reload
+  // ONLY when the PC form still matches the saved data and the user has been
+  // idle — so it never overwrites in-progress edits.
+  const lokaalRef = useRef('')
+  const opgeslagenRef = useRef('')
+  const laatsteInteractieRef = useRef(0)
+  const onRefreshRef = useRef(onRefresh)
+  onRefreshRef.current = onRefresh
+  lokaalRef.current = snapshotVan({
+    naam,
+    type,
+    datum,
+    publiek,
+    doelmarge,
+    kortingReden,
+    toewijzingen,
+    reg: [...reg.values()]
+  })
+  opgeslagenRef.current = snapshotVan({
+    naam: feest.naam,
+    type: feest.type_feest,
+    datum: feest.datum,
+    publiek: feest.publiek,
+    doelmarge: feest.doelmarge,
+    kortingReden: feest.korting_reden,
+    toewijzingen: feest.toewijzingen,
+    reg: feest.registraties
+  })
+  useEffect(() => {
+    const id = setInterval(() => {
+      const pristine = lokaalRef.current === opgeslagenRef.current
+      const idle = Date.now() - laatsteInteractieRef.current > 20000
+      if (pristine && idle) onRefreshRef.current()
+    }, 10000)
+    return () => clearInterval(id)
+  }, [])
 
   const setRegVeld = (drankId: number, veld: keyof Registratie, val: number): void =>
     setReg((prev) => {
@@ -176,8 +252,12 @@ function FeestForm({
     onDeleted()
   }
 
+  const markeerInteractie = (): void => {
+    laatsteInteractieRef.current = Date.now()
+  }
+
   return (
-    <div>
+    <div onInputCapture={markeerInteractie} onFocusCapture={markeerInteractie}>
       <PageHeader
         title={naam || 'Feest'}
         subtitle="Eerst de opzet en de toewijzingen. Daarna, na het feest, de registratie van wat er gedronken is."

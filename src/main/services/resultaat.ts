@@ -13,7 +13,7 @@ import {
   type AttributieInput,
   type Vat
 } from '@shared/domain'
-import { getFeest, listDranken, listVaten, listForfaits, getInstellingen } from '../db/repo'
+import { getFeest, listDranken, listVaten, listForfaits } from '../db/repo'
 
 export interface RegelToelichting {
   drank_id: number
@@ -93,7 +93,8 @@ export function buildResultaat(feestId: number): ResultaatData | null {
         consumpties,
         inkoopprijs_per_consumptie: inkoop,
         menuprijs: menu,
-        btw_inkoop: drank.btw_inkoop ?? 21
+        btw_inkoop: drank.btw_inkoop ?? 21,
+        btw_verkoop: drank.btw_verkoop ?? 21
       })
       toelichtingen.push({ drank_id: drank.id, naam: drank.naam, schenkwijze: drank.schenkwijze, meting, berekening })
     }
@@ -110,12 +111,7 @@ export function buildResultaat(feestId: number): ResultaatData | null {
     }
   })
 
-  const resultaat = computeFeestResultaat(
-    regels,
-    attributies,
-    feest.doelmarge,
-    getInstellingen().btw_verkoop ?? 21
-  )
+  const resultaat = computeFeestResultaat(regels, attributies, feest.doelmarge)
 
   return { feestId, resultaat, toelichtingen }
 }

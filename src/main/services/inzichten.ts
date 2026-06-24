@@ -111,13 +111,6 @@ export interface Inzichten {
   feestRanking: FeestRanking[]
   kortingLedger: KortingRegel[]
   kortingTotaal: number
-  btw: {
-    verkoop_tarief: number
-    verkoop_btw: number
-    inkoop_btw: number
-    verschuldigd: number
-    per_tarief: { tarief: number; inkoop_incl: number; btw: number }[]
-  }
 }
 
 export function buildInzichten(): Inzichten {
@@ -136,9 +129,6 @@ export function buildInzichten(): Inzichten {
   const feestRanking: FeestRanking[] = []
   const alcohol = { alcoholisch: { consumpties: 0, omzet: 0 }, nonalcoholisch: { consumpties: 0, omzet: 0 } }
 
-  const btwPerTarief = new Map<number, { inkoop_incl: number; btw: number }>()
-  let verkoopBtw = 0
-  let inkoopBtw = 0
   let totaalOmzet = 0
   let totaalKost = 0
   let totaalAlacarte = 0
@@ -158,15 +148,6 @@ export function buildInzichten(): Inzichten {
     totaalConsumpties += r.totaal_consumpties
     totaalPersonen += r.aantal_personen
     resultaatSom += r.resultaat
-
-    verkoopBtw += r.btw.verkoop_btw
-    inkoopBtw += r.btw.inkoop_btw
-    for (const pt of r.btw.per_tarief) {
-      const acc = btwPerTarief.get(pt.tarief) ?? { inkoop_incl: 0, btw: 0 }
-      acc.inkoop_incl += pt.inkoop_incl
-      acc.btw += pt.btw
-      btwPerTarief.set(pt.tarief, acc)
-    }
 
     for (const regel of r.regels) {
       const agg = dranken.get(regel.drank_id) ?? {
@@ -323,15 +304,6 @@ export function buildInzichten(): Inzichten {
     forfaitPrestatie,
     feestRanking,
     kortingLedger,
-    kortingTotaal,
-    btw: {
-      verkoop_tarief: inst.btw_verkoop ?? 21,
-      verkoop_btw: verkoopBtw,
-      inkoop_btw: inkoopBtw,
-      verschuldigd: verkoopBtw - inkoopBtw,
-      per_tarief: [...btwPerTarief.entries()]
-        .map(([tarief, v]) => ({ tarief, ...v }))
-        .sort((a, b) => b.tarief - a.tarief)
-    }
+    kortingTotaal
   }
 }

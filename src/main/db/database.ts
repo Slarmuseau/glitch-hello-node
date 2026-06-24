@@ -29,6 +29,9 @@ function runMigrations(database: Database.Database): void {
   if (!dranken.includes('btw_inkoop')) {
     database.exec('ALTER TABLE dranken ADD COLUMN btw_inkoop REAL NOT NULL DEFAULT 21')
   }
+  if (!dranken.includes('btw_verkoop')) {
+    database.exec('ALTER TABLE dranken ADD COLUMN btw_verkoop REAL NOT NULL DEFAULT 21')
+  }
 
   const instellingen = kolommen('instellingen')
   if (!instellingen.includes('btw_verkoop')) {

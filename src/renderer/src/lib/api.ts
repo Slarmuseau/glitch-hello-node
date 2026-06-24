@@ -226,13 +226,6 @@ export interface Inzichten {
   feestRanking: FeestRanking[]
   kortingLedger: KortingRegel[]
   kortingTotaal: number
-  btw: {
-    verkoop_tarief: number
-    verkoop_btw: number
-    inkoop_btw: number
-    verschuldigd: number
-    per_tarief: { tarief: number; inkoop_incl: number; btw: number }[]
-  }
 }
 
 export const api = {

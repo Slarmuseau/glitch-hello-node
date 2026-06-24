@@ -44,6 +44,8 @@ export interface Drank {
 
   /** Purchase VAT rate in percent (usually 21, sometimes 6). Prices are incl. BTW. */
   btw_inkoop?: number | null
+  /** Sales VAT rate in percent (drinks: usually 21). Prices are incl. BTW. */
+  btw_verkoop?: number | null
 }
 
 /** A barrel / keg. Store only what is measured; derive the rest. */

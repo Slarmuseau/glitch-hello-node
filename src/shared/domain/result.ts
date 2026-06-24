@@ -25,13 +25,14 @@ export interface ResultaatRegelInput {
   menuprijs: number
   /** Purchase VAT rate in percent (default 21). */
   btw_inkoop?: number | null
+  /** Sales VAT rate in percent (default 21). */
+  btw_verkoop?: number | null
 }
 
 export interface BtwOverzicht {
-  verkoop_tarief: number
-  verkoop_incl: number
+  /** Output VAT, on the à-la-carte (menu) value of what was sold. */
   verkoop_btw: number
-  inkoop_incl: number
+  /** Input VAT, on purchases. */
   inkoop_btw: number
   /** Purchases broken down per VAT rate. */
   per_tarief: { tarief: number; inkoop_incl: number; btw: number }[]
@@ -101,8 +102,7 @@ export interface FeestResultaat {
 export function computeFeestResultaat(
   regels: ResultaatRegelInput[],
   attributies: AttributieInput[],
-  doelmarge: number,
-  btw_verkoop = 21
+  doelmarge: number
 ): FeestResultaat {
   const verrijkteRegels: ResultaatRegel[] = regels.map((r) => ({
     ...r,
@@ -137,30 +137,29 @@ export function computeFeestResultaat(
     0
   )
 
-  // VAT (prices incl. BTW). Output VAT on the (discounted) forfait revenue,
-  // input VAT on purchases per drink's rate.
+  // VAT (prices incl. BTW). Both purchase and sale VAT are per drink: input VAT
+  // on purchases, output VAT on the à-la-carte (menu) value of what was sold.
   const tariefMap = new Map<number, { inkoop_incl: number; btw: number }>()
   let inkoop_btw_totaal = 0
+  let verkoop_btw_totaal = 0
   for (const r of verrijkteRegels) {
-    const tarief = r.btw_inkoop ?? 21
-    const btw = btwInBedrag(r.inkoopkost, tarief)
-    inkoop_btw_totaal += btw
-    const t = tariefMap.get(tarief) ?? { inkoop_incl: 0, btw: 0 }
+    const tariefIn = r.btw_inkoop ?? 21
+    const btwIn = btwInBedrag(r.inkoopkost, tariefIn)
+    inkoop_btw_totaal += btwIn
+    const t = tariefMap.get(tariefIn) ?? { inkoop_incl: 0, btw: 0 }
     t.inkoop_incl += r.inkoopkost
-    t.btw += btw
-    tariefMap.set(tarief, t)
+    t.btw += btwIn
+    tariefMap.set(tariefIn, t)
+
+    verkoop_btw_totaal += btwInBedrag(r.alacarte_omzet, r.btw_verkoop ?? 21)
   }
-  const verkoop_btw = btwInBedrag(forfait_omzet, btw_verkoop)
   const btw: BtwOverzicht = {
-    verkoop_tarief: btw_verkoop,
-    verkoop_incl: forfait_omzet,
-    verkoop_btw,
-    inkoop_incl: totaal_inkoopkost,
+    verkoop_btw: verkoop_btw_totaal,
     inkoop_btw: inkoop_btw_totaal,
     per_tarief: [...tariefMap.entries()]
       .map(([tarief, v]) => ({ tarief, ...v }))
       .sort((a, b) => b.tarief - a.tarief),
-    verschuldigd: verkoop_btw - inkoop_btw_totaal
+    verschuldigd: verkoop_btw_totaal - inkoop_btw_totaal
   }
 
   return {

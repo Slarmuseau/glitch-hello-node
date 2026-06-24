@@ -27,17 +27,8 @@ export default function Instellingen(): JSX.Element {
       <div className="space-y-5">
         {/* Marge */}
         <Card>
-          <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wide mb-4">
-            Marge en BTW
-          </h2>
+          <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wide mb-4">Marge</h2>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="BTW verkoop (%)" hint="Drank: meestal 21%. Alle prijzen zijn incl. BTW.">
-              <NumberInput
-                value={data.btw_verkoop}
-                onCommit={(n) => save({ btw_verkoop: n })}
-                suffix="%"
-              />
-            </Field>
             <Field
               label="Doel: % méér dan verkoop per glas"
               hint="0% = even goed als per glas. Enkele % is een mooi doel."
