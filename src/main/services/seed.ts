@@ -116,7 +116,22 @@ export function seedDemoData(): void {
       Cocktails: 20,
       Mocktails: 25
     },
-    standaard_inkoopmarge_per_categorie: {}
+    standaard_inkoopmarge_per_categorie: {},
+    // Per party type: standard 1,5u, with a (non-linear) price/consumption
+    // adjustment per duration. Front-loaded: 1u is proportionally pricier.
+    type_feest_config: Object.fromEntries(
+      ['huwelijk', 'bedrijfsfeest', 'communie', 'verjaardag', 'scoutsfeest', 'andere'].map((t) => [
+        t,
+        {
+          standaardduur: 1.5,
+          aanpassingen: [
+            { duur: 1, pct: -20 },
+            { duur: 1.5, pct: 0 },
+            { duur: 2, pct: 12 }
+          ]
+        }
+      ])
+    )
   })
 
   // Vaten (30L, 10kg tare, density 1.0, 5% loss — the template).
@@ -193,8 +208,8 @@ export function seedDemoData(): void {
     korting_reden: null,
     prijs_momentopname: snapshot,
     toewijzingen: [
-      { forfait_id: streekId, forfait_naam: 'Forfait Streek', aantal_personen: 80, forfaitprijs_per_persoon: 18 },
-      { forfait_id: frisId, forfait_naam: 'Forfait Fris', aantal_personen: 20, forfaitprijs_per_persoon: 10 }
+      { forfait_id: streekId, forfait_naam: 'Forfait Streek', aantal_personen: 80, forfaitprijs_per_persoon: 18, duur_uur: 1.5 },
+      { forfait_id: frisId, forfait_naam: 'Forfait Fris', aantal_personen: 20, forfaitprijs_per_persoon: 10, duur_uur: 1.5 }
     ]
   })
   const huwelijkReg: Registratie[] = [
@@ -224,7 +239,8 @@ export function seedDemoData(): void {
         forfait_naam: 'Forfait Basis',
         aantal_personen: 60,
         forfaitprijs_per_persoon: 12,
-        korting_pct: 10
+        korting_pct: 10,
+        duur_uur: 2
       }
     ]
   })

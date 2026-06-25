@@ -24,6 +24,9 @@ function runMigrations(database: Database.Database): void {
   if (!toewijzingen.includes('korting_pct')) {
     database.exec('ALTER TABLE toewijzingen ADD COLUMN korting_pct REAL NOT NULL DEFAULT 0')
   }
+  if (!toewijzingen.includes('duur_uur')) {
+    database.exec('ALTER TABLE toewijzingen ADD COLUMN duur_uur REAL NOT NULL DEFAULT 1.5')
+  }
 
   const dranken = kolommen('dranken')
   if (!dranken.includes('btw_inkoop')) {
@@ -36,6 +39,9 @@ function runMigrations(database: Database.Database): void {
   const instellingen = kolommen('instellingen')
   if (!instellingen.includes('btw_verkoop')) {
     database.exec('ALTER TABLE instellingen ADD COLUMN btw_verkoop REAL NOT NULL DEFAULT 21')
+  }
+  if (!instellingen.includes('type_feest_config')) {
+    database.exec("ALTER TABLE instellingen ADD COLUMN type_feest_config TEXT NOT NULL DEFAULT '{}'")
   }
 }
 

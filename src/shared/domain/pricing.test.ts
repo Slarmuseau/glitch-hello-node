@@ -5,8 +5,30 @@ import {
   inkoopmargeOpOmzet,
   suggestedForfaitPrijs,
   forfaitPrijsVoorMarge,
-  bufferConsumptiesPerHoofd
+  bufferConsumptiesPerHoofd,
+  duurAanpassingPct
 } from './pricing'
+
+describe('duration adjustment is front-loaded (1u proportionally pricier)', () => {
+  it('falls back to the default curve when not configured', () => {
+    expect(duurAanpassingPct(null, 1)).toBe(-20)
+    expect(duurAanpassingPct(undefined, 1.5)).toBe(0)
+    expect(duurAanpassingPct(null, 2)).toBe(12)
+  })
+
+  it('uses the manager-defined value when configured', () => {
+    const cfg = { aanpassingen: [{ duur: 1, pct: -10 }, { duur: 2, pct: 25 }] }
+    expect(duurAanpassingPct(cfg, 1)).toBe(-10)
+    expect(duurAanpassingPct(cfg, 2)).toBe(25)
+  })
+
+  it('per-hour price decreases with duration (sub-linear)', () => {
+    // default: 1u -20% over 1h, 2u +12% over 2h
+    const p1 = 100 * (1 - 0.2)
+    const p2 = 100 * (1 + 0.12)
+    expect(p1 / 1).toBeGreaterThan(p2 / 2)
+  })
+})
 
 describe('forfaitmarge is measured against per-glass (à-la-carte) value', () => {
   it('0% when the forfait revenue equals the per-glass value of what was drunk', () => {

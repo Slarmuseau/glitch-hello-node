@@ -7,13 +7,14 @@ import {
   consumptiesUitFles,
   consumptiesUitVatWeging,
   litersUitVat,
+  duurAanpassingPct,
   formatNumber,
   type FeestResultaat,
   type ResultaatRegelInput,
   type AttributieInput,
   type Vat
 } from '@shared/domain'
-import { getFeest, listDranken, listVaten, listForfaits } from '../db/repo'
+import { getFeest, listDranken, listVaten, listForfaits, getInstellingen } from '../db/repo'
 
 export interface RegelToelichting {
   drank_id: number
@@ -98,14 +99,21 @@ export function buildResultaat(feestId: number): ResultaatData | null {
     }
   }
 
+  const config = getInstellingen().type_feest_config?.[feest.type_feest]
   const attributies: AttributieInput[] = feest.toewijzingen.map((t) => {
     const forfait = t.forfait_id ? forfaits.get(t.forfait_id) : undefined
+    // Expected consumptions scale with the group's duration (same % as price).
+    const factor = 1 + duurAanpassingPct(config, t.duur_uur ?? 1.5) / 100
+    const verwacht =
+      forfait?.verwachte_consumpties_per_persoon != null
+        ? forfait.verwachte_consumpties_per_persoon * factor
+        : null
     return {
       forfait_naam: t.forfait_naam,
       aantal_personen: t.aantal_personen,
       forfaitprijs_per_persoon: t.forfaitprijs_per_persoon,
       korting_pct: t.korting_pct ?? 0,
-      verwachte_consumpties_per_persoon: forfait?.verwachte_consumpties_per_persoon ?? null
+      verwachte_consumpties_per_persoon: verwacht
     }
   })
 

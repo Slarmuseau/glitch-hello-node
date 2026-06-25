@@ -310,6 +310,7 @@ export interface FeestInput {
     aantal_personen: number
     forfaitprijs_per_persoon: number
     korting_pct?: number
+    duur_uur?: number
   }[]
 }
 
@@ -343,8 +344,8 @@ export function upsertFeest(f: FeestInput): FeestVol {
     }
     db.prepare('DELETE FROM toewijzingen WHERE feest_id=?').run(id)
     const ins = db.prepare(
-      `INSERT INTO toewijzingen (feest_id, forfait_id, forfait_naam, aantal_personen, forfaitprijs_per_persoon, korting_pct)
-       VALUES (?,?,?,?,?,?)`
+      `INSERT INTO toewijzingen (feest_id, forfait_id, forfait_naam, aantal_personen, forfaitprijs_per_persoon, korting_pct, duur_uur)
+       VALUES (?,?,?,?,?,?,?)`
     )
     for (const t of f.toewijzingen) {
       ins.run(
@@ -353,7 +354,8 @@ export function upsertFeest(f: FeestInput): FeestVol {
         t.forfait_naam,
         t.aantal_personen,
         t.forfaitprijs_per_persoon,
-        t.korting_pct ?? 0
+        t.korting_pct ?? 0,
+        t.duur_uur ?? 1.5
       )
     }
     return id
@@ -400,6 +402,7 @@ export function getInstellingen(): Instellingen {
     standaard_doelmarge: row.standaard_doelmarge,
     marge_conventie: row.marge_conventie,
     btw_verkoop: row.btw_verkoop ?? 21,
+    type_feest_config: JSON.parse(row.type_feest_config || '{}'),
     bedrijfsnaam: row.bedrijfsnaam,
     bedrijfsgegevens: row.bedrijfsgegevens,
     logo_pad: row.logo_pad,
@@ -415,7 +418,8 @@ export function saveInstellingen(s: Instellingen): Instellingen {
   getDb()
     .prepare(
       `UPDATE instellingen SET standaard_doelmarge=@standaard_doelmarge,
-        marge_conventie=@marge_conventie, btw_verkoop=@btw_verkoop, bedrijfsnaam=@bedrijfsnaam,
+        marge_conventie=@marge_conventie, btw_verkoop=@btw_verkoop,
+        type_feest_config=@type_feest_config, bedrijfsnaam=@bedrijfsnaam,
         bedrijfsgegevens=@bedrijfsgegevens, logo_pad=@logo_pad, backup_locatie=@backup_locatie,
         categorieen=@categorieen,
         standaard_glaasgrootte_per_categorie=@standaard_glaasgrootte_per_categorie,
@@ -426,6 +430,7 @@ export function saveInstellingen(s: Instellingen): Instellingen {
       standaard_doelmarge: s.standaard_doelmarge,
       marge_conventie: s.marge_conventie,
       btw_verkoop: s.btw_verkoop ?? 21,
+      type_feest_config: JSON.stringify(s.type_feest_config ?? {}),
       bedrijfsnaam: s.bedrijfsnaam,
       bedrijfsgegevens: s.bedrijfsgegevens,
       logo_pad: s.logo_pad ?? null,

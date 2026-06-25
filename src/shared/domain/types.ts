@@ -86,6 +86,8 @@ export interface Toewijzing {
   forfaitprijs_per_persoon: number
   /** Discount the customer gets on this forfait's price, in percent (0..100). */
   korting_pct: number
+  /** Duration of this group in hours (receptie, avondfeest, …). */
+  duur_uur: number
 }
 
 export interface Feest {
@@ -108,11 +110,20 @@ export interface PrijsSnapshotRegel {
 
 export type PrijsMomentopname = Record<number, PrijsSnapshotRegel>
 
+/** Per party type: a standard duration and a price/consumption adjustment (%)
+ *  per duration. The adjustment is manager-defined (non-linear). */
+export interface TypeFeestConfig {
+  standaardduur: number
+  aanpassingen: { duur: number; pct: number }[]
+}
+
 export interface Instellingen {
   standaard_doelmarge: number // 0..1
   marge_conventie: MargeConventie
   /** Sales VAT rate in percent (drinks: 21). Prices are incl. BTW. */
   btw_verkoop: number
+  /** Per party type: standard duration + price adjustment (%) per duration. */
+  type_feest_config: Record<string, TypeFeestConfig>
   bedrijfsnaam: string
   bedrijfsgegevens: string
   logo_pad?: string | null

@@ -60,6 +60,29 @@ export function forfaitPrijsVoorMarge(alacarte_per_persoon: number, doelmarge: n
   return alacarte_per_persoon * (1 + doelmarge)
 }
 
+/** Default, front-loaded duration curve (vs a 1,5u standard) used until the
+ *  manager configures their own per type. */
+export const STANDAARD_DUUR_AANPASSINGEN: { duur: number; pct: number }[] = [
+  { duur: 1, pct: -20 },
+  { duur: 1.5, pct: 0 },
+  { duur: 2, pct: 12 }
+]
+
+/**
+ * Price/consumption adjustment (%) for a given duration, from a party type's
+ * config. Manager-defined per duration (non-linear). Falls back to the default
+ * curve when no config (or no entry for that duration) exists.
+ */
+export function duurAanpassingPct(
+  config: { aanpassingen: { duur: number; pct: number }[] } | undefined | null,
+  duur: number
+): number {
+  const aanp = config?.aanpassingen ?? STANDAARD_DUUR_AANPASSINGEN
+  const m = aanp.find((a) => a.duur === duur)
+  if (m) return m.pct
+  return STANDAARD_DUUR_AANPASSINGEN.find((a) => a.duur === duur)?.pct ?? 0
+}
+
 /**
  * The buffer line: at this price per head, up to how many consumptions can a
  * guest take before the forfait drops below the per-glass value (plus target)?

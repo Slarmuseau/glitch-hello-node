@@ -2,12 +2,22 @@ import { useMemo, useState, useEffect, useRef, type ReactNode } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api, type FeestVol, type Toewijzing, type Registratie } from '../lib/api'
 import { useData } from '../lib/hooks'
-import { vatMap, TYPE_FEEST_LABEL, TYPE_FEEST_OPTIES } from '../lib/calc'
+import { vatMap, TYPE_FEEST_LABEL, TYPE_FEEST_OPTIES, DUREN, duurLabel } from '../lib/calc'
 import { PageHeader, Card, Field, Badge } from '../components/ui'
 import { NumberInput } from '../components/NumberInput'
 import { useToast } from '../components/Toast'
 import { MobielModal } from '../components/MobielModal'
-import { suggestedForfaitPrijs, formatEuro, type Drank, type Forfait, type Vat } from '@shared/domain'
+import {
+  suggestedForfaitPrijs,
+  duurAanpassingPct,
+  euro,
+  formatEuro,
+  formatPercent,
+  type Drank,
+  type Forfait,
+  type Vat,
+  type TypeFeestConfig
+} from '@shared/domain'
 
 export default function FeestDetail(): JSX.Element {
   const { id } = useParams()
@@ -19,8 +29,9 @@ export default function FeestDetail(): JSX.Element {
   const forfaits = useData(() => api.forfaits.list())
   const dranken = useData(() => api.dranken.list())
   const vaten = useData(() => api.vaten.list())
+  const inst = useData(() => api.instellingen.get())
 
-  if (feest.loading || forfaits.loading || dranken.loading || vaten.loading)
+  if (feest.loading || forfaits.loading || dranken.loading || vaten.loading || inst.loading)
     return <div className="text-ink-faint">Laden…</div>
   if (!feest.data) return <div className="text-ink-faint">Feest niet gevonden.</div>
 
@@ -30,6 +41,7 @@ export default function FeestDetail(): JSX.Element {
       forfaits={forfaits.data ?? []}
       dranken={dranken.data ?? []}
       vaten={vaten.data ?? []}
+      typeConfig={inst.data?.type_feest_config ?? {}}
       onSaved={() => feest.reload()}
       onRefresh={() => feest.reload()}
       onResultaat={() => nav(`/feesten/${feestId}/resultaat`)}
@@ -65,7 +77,13 @@ function snapshotVan(s: {
   reg: Registratie[]
 }): string {
   const t = s.toewijzingen
-    .map((x) => ({ fi: x.forfait_id ?? null, ap: x.aantal_personen || 0, pp: x.forfaitprijs_per_persoon || 0, k: x.korting_pct ?? 0 }))
+    .map((x) => ({
+      fi: x.forfait_id ?? null,
+      ap: x.aantal_personen || 0,
+      pp: x.forfaitprijs_per_persoon || 0,
+      k: x.korting_pct ?? 0,
+      du: x.duur_uur ?? 1.5
+    }))
     .sort((a, b) => (a.fi ?? 0) - (b.fi ?? 0) || a.pp - b.pp || a.ap - b.ap)
   const r = s.reg
     .map((x) => ({
@@ -95,6 +113,7 @@ function FeestForm({
   forfaits,
   dranken,
   vaten,
+  typeConfig,
   onSaved,
   onRefresh,
   onResultaat,
@@ -106,6 +125,7 @@ function FeestForm({
   forfaits: Forfait[]
   dranken: Drank[]
   vaten: Vat[]
+  typeConfig: Record<string, TypeFeestConfig>
   onSaved: () => void
   onRefresh: () => void
   onResultaat: () => void
@@ -205,6 +225,16 @@ function FeestForm({
 
   const teTonen = alleDranken ? dranken : dranken.filter((d) => toegestaneIds.has(d.id))
   const aantalPersonen = toewijzingen.reduce((s, t) => s + t.aantal_personen, 0)
+
+  // Duration-based price suggestion for the current party type.
+  const huidigeConfig = typeConfig[type]
+  const standaardDuur = huidigeConfig?.standaardduur ?? 1.5
+  const pctVoorDuur = (duur: number): number => duurAanpassingPct(huidigeConfig, duur)
+  const prijsMetDuur = (forfaitId: number | null, duur: number): number => {
+    const f = forfaits.find((x) => x.id === forfaitId)
+    if (!f) return 0
+    return euro(forfaitPrijs(f, dranken) * (1 + pctVoorDuur(duur) / 100))
+  }
 
   const bewaarFeest = async (): Promise<void> => {
     await api.feesten.upsert({
@@ -336,8 +366,9 @@ function FeestForm({
                   forfait_id: forfaits[0]?.id ?? null,
                   forfait_naam: forfaits[0]?.naam ?? '',
                   aantal_personen: 0,
-                  forfaitprijs_per_persoon: forfaits[0] ? forfaitPrijs(forfaits[0], dranken) : 0,
-                  korting_pct: 0
+                  forfaitprijs_per_persoon: prijsMetDuur(forfaits[0]?.id ?? null, standaardDuur),
+                  korting_pct: 0,
+                  duur_uur: standaardDuur
                 }
               ])
             }
@@ -353,7 +384,7 @@ function FeestForm({
         <div className="space-y-3">
           {toewijzingen.map((t, i) => (
             <div key={i} className="grid grid-cols-12 gap-3 items-end">
-              <div className="col-span-4">
+              <div className="col-span-3">
                 <Field label="Forfait">
                   <select
                     className="input"
@@ -369,7 +400,7 @@ function FeestForm({
                                 forfait_id: fid,
                                 forfait_naam: f?.naam ?? '',
                                 forfaitprijs_per_persoon: f
-                                  ? forfaitPrijs(f, dranken)
+                                  ? prijsMetDuur(fid, x.duur_uur ?? standaardDuur)
                                   : x.forfaitprijs_per_persoon
                               }
                             : x
@@ -399,6 +430,37 @@ function FeestForm({
                 </Field>
               </div>
               <div className="col-span-2">
+                <Field label="Duur">
+                  <select
+                    className="input"
+                    value={t.duur_uur ?? standaardDuur}
+                    onChange={(e) => {
+                      const duur = Number(e.target.value)
+                      setToewijzingen((prev) =>
+                        prev.map((x, j) =>
+                          j === i
+                            ? {
+                                ...x,
+                                duur_uur: duur,
+                                forfaitprijs_per_persoon: x.forfait_id
+                                  ? prijsMetDuur(x.forfait_id, duur)
+                                  : x.forfaitprijs_per_persoon
+                              }
+                            : x
+                        )
+                      )
+                    }}
+                  >
+                    {DUREN.map((d) => (
+                      <option key={d} value={d}>
+                        {duurLabel(d)} ({pctVoorDuur(d) >= 0 ? '+' : ''}
+                        {formatPercent(pctVoorDuur(d) / 100)})
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
+              <div className="col-span-2">
                 <Field label="Prijs / persoon">
                   <NumberInput
                     value={t.forfaitprijs_per_persoon}
@@ -411,13 +473,13 @@ function FeestForm({
                   />
                 </Field>
               </div>
-              <div className="col-span-3">
+              <div className="col-span-2">
                 <Field
                   label="Korting"
                   hint={
                     (t.korting_pct ?? 0) > 0
                       ? `netto ${formatEuro(t.forfaitprijs_per_persoon * (1 - (t.korting_pct ?? 0) / 100))}/pers`
-                      : 'korting voor de klant'
+                      : 'korting'
                   }
                 >
                   <NumberInput
