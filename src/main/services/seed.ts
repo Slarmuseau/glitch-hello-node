@@ -147,7 +147,9 @@ export function seedDemoData(): void {
       inkoopprijs_per_consumptie: d.inkoopprijs_per_consumptie ?? null,
       fles_inhoud_cl: d.fles_inhoud_cl ?? null,
       inkoopprijs_per_fles: d.inkoopprijs_per_fles ?? null,
-      vat_id: d.vat ? vatIds.get(d.vat) ?? null : null
+      vat_id: d.vat ? vatIds.get(d.vat) ?? null : null,
+      // Belgian habit: non-alcoholic purchases at 6%, the rest at 21%.
+      btw_inkoop: ['Soft', 'Warm', 'Alcoholvrij bier', 'Mocktails'].includes(d.categorie) ? 6 : 21
     })
     drankIds.set(d.naam, saved.id)
   }
@@ -187,12 +189,12 @@ export function seedDemoData(): void {
     type_feest: 'huwelijk',
     datum: '2026-05-30',
     publiek: 'Volwassenen',
-    doelmarge: 0.3,
+    doelmarge: 0.05,
     korting_reden: null,
     prijs_momentopname: snapshot,
     toewijzingen: [
-      { forfait_id: streekId, forfait_naam: 'Forfait Streek', aantal_personen: 80, forfaitprijs_per_persoon: 18 },
-      { forfait_id: frisId, forfait_naam: 'Forfait Fris', aantal_personen: 20, forfaitprijs_per_persoon: 10 }
+      { forfait_id: streekId, forfait_naam: 'Forfait Streek', aantal_personen: 80, forfaitprijs_per_persoon: 18, duur_uur: 1.5 },
+      { forfait_id: frisId, forfait_naam: 'Forfait Fris', aantal_personen: 20, forfaitprijs_per_persoon: 10, duur_uur: 1.5 }
     ]
   })
   const huwelijkReg: Registratie[] = [
@@ -213,11 +215,18 @@ export function seedDemoData(): void {
     type_feest: 'scoutsfeest',
     datum: '2026-04-12',
     publiek: 'Jong gezelschap',
-    doelmarge: 0.2,
+    doelmarge: 0.05,
     korting_reden: 'sociaal doel — jeugdvereniging',
     prijs_momentopname: snapshot,
     toewijzingen: [
-      { forfait_id: basisId, forfait_naam: 'Forfait Basis', aantal_personen: 60, forfaitprijs_per_persoon: 12 }
+      {
+        forfait_id: basisId,
+        forfait_naam: 'Forfait Basis',
+        aantal_personen: 60,
+        forfaitprijs_per_persoon: 12,
+        korting_pct: 10,
+        duur_uur: 2
+      }
     ]
   })
   const scoutsReg: Registratie[] = [

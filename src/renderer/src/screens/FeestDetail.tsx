@@ -1,12 +1,22 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useState, useEffect, useRef, type ReactNode } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { api, type FeestVol, type Toewijzing, type Registratie } from '../lib/api'
+import { api, isElectron, type FeestVol, type Toewijzing, type Registratie } from '../lib/api'
 import { useData } from '../lib/hooks'
 import { vatMap, TYPE_FEEST_LABEL, TYPE_FEEST_OPTIES } from '../lib/calc'
 import { PageHeader, Card, Field, Badge } from '../components/ui'
 import { NumberInput } from '../components/NumberInput'
 import { useToast } from '../components/Toast'
-import { suggestedForfaitPrijs, type Drank, type Forfait, type Vat } from '@shared/domain'
+import { MobielModal } from '../components/MobielModal'
+import {
+  suggestedForfaitPrijs,
+  duurFactor,
+  euro,
+  formatEuro,
+  formatPercent,
+  type Drank,
+  type Forfait,
+  type Vat
+} from '@shared/domain'
 
 export default function FeestDetail(): JSX.Element {
   const { id } = useParams()
@@ -18,8 +28,9 @@ export default function FeestDetail(): JSX.Element {
   const forfaits = useData(() => api.forfaits.list())
   const dranken = useData(() => api.dranken.list())
   const vaten = useData(() => api.vaten.list())
+  const inst = useData(() => api.instellingen.get())
 
-  if (feest.loading || forfaits.loading || dranken.loading || vaten.loading)
+  if (feest.loading || forfaits.loading || dranken.loading || vaten.loading || inst.loading)
     return <div className="text-ink-faint">Laden…</div>
   if (!feest.data) return <div className="text-ink-faint">Feest niet gevonden.</div>
 
@@ -29,8 +40,12 @@ export default function FeestDetail(): JSX.Element {
       forfaits={forfaits.data ?? []}
       dranken={dranken.data ?? []}
       vaten={vaten.data ?? []}
+      eersteUur={inst.data?.duur_gewicht_eerste_uur ?? 2}
+      extraUur={inst.data?.duur_gewicht_extra_uur ?? 1}
       onSaved={() => feest.reload()}
+      onRefresh={() => feest.reload()}
       onResultaat={() => nav(`/feesten/${feestId}/resultaat`)}
+      onBlad={() => nav(`/feesten/${feestId}/blad`)}
       onDeleted={() => nav('/feesten')}
       toast={toast}
     />
@@ -48,13 +63,62 @@ function forfaitPrijs(f: Forfait, dranken: Drank[]): number {
     : 0
 }
 
+// A normalized fingerprint of the editable party state, used to tell whether
+// the PC form still matches the saved data (so auto-refresh never clobbers
+// in-progress edits).
+function snapshotVan(s: {
+  naam: string
+  type: string
+  datum: string
+  publiek?: string | null
+  doelmarge: number
+  kortingReden?: string | null
+  toewijzingen: Toewijzing[]
+  reg: Registratie[]
+}): string {
+  const t = s.toewijzingen
+    .map((x) => ({
+      fi: x.forfait_id ?? null,
+      ap: x.aantal_personen || 0,
+      pp: x.forfaitprijs_per_persoon || 0,
+      k: x.korting_pct ?? 0,
+      du: x.duur_uur ?? 1.5
+    }))
+    .sort((a, b) => (a.fi ?? 0) - (b.fi ?? 0) || a.pp - b.pp || a.ap - b.ap)
+  const r = s.reg
+    .map((x) => ({
+      d: x.drank_id,
+      e: x.aantal_empties ?? null,
+      f: x.aantal_flessen ?? null,
+      v: x.aantal_vaten_geopend ?? null,
+      g: x.gewicht_laatste_vat_kg ?? null,
+      c: x.cocktail_tally ?? null
+    }))
+    .filter((x) => x.e != null || x.f != null || x.v != null || x.g != null || x.c != null)
+    .sort((a, b) => a.d - b.d)
+  return JSON.stringify({
+    naam: s.naam,
+    type: s.type,
+    datum: s.datum,
+    publiek: s.publiek || '',
+    doelmarge: s.doelmarge,
+    kortingReden: s.kortingReden || '',
+    t,
+    r
+  })
+}
+
 function FeestForm({
   feest,
   forfaits,
   dranken,
   vaten,
+  eersteUur,
+  extraUur,
   onSaved,
+  onRefresh,
   onResultaat,
+  onBlad,
   onDeleted,
   toast
 }: {
@@ -62,11 +126,20 @@ function FeestForm({
   forfaits: Forfait[]
   dranken: Drank[]
   vaten: Vat[]
+  eersteUur: number
+  extraUur: number
   onSaved: () => void
+  onRefresh: () => void
   onResultaat: () => void
+  onBlad: () => void
   onDeleted: () => void
   toast: (t: string, tone?: 'info' | 'good' | 'bad') => void
 }): JSX.Element {
+  // On a phone/browser (web mode) there is no Electron bridge. The phone is
+  // the ACTIVE editor there, so it must never auto-refresh itself away from
+  // in-progress input, and after saving it should stay put with a clear
+  // confirmation instead of navigating to the PC-oriented result screen.
+  const isWeb = !isElectron
   const vmap = vatMap(vaten)
   const [naam, setNaam] = useState(feest.naam)
   const [type, setType] = useState<string>(feest.type_feest)
@@ -78,6 +151,7 @@ function FeestForm({
     feest.toewijzingen.map((t) => ({ ...t }))
   )
   const [alleDranken, setAlleDranken] = useState(false)
+  const [mobielOpen, setMobielOpen] = useState(false)
 
   // Registration state keyed by drank id.
   const [reg, setReg] = useState<Map<number, Registratie>>(() => {
@@ -85,6 +159,63 @@ function FeestForm({
     for (const r of feest.registraties) m.set(r.drank_id, { ...r })
     return m
   })
+
+  // Re-sync the form from the latest saved data — e.g. after the phone added
+  // input and the user clicks "Vernieuwen".
+  useEffect(() => {
+    setNaam(feest.naam)
+    setType(feest.type_feest)
+    setDatum(feest.datum)
+    setPubliek(feest.publiek ?? '')
+    setDoelmarge(feest.doelmarge)
+    setKortingReden(feest.korting_reden ?? '')
+    setToewijzingen(feest.toewijzingen.map((t) => ({ ...t })))
+    const m = new Map<number, Registratie>()
+    for (const r of feest.registraties) m.set(r.drank_id, { ...r })
+    setReg(m)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [feest])
+
+  // Safe auto-refresh: poll for changes (e.g. input from a phone) and reload
+  // ONLY when the PC form still matches the saved data and the user has been
+  // idle — so it never overwrites in-progress edits.
+  const lokaalRef = useRef('')
+  const opgeslagenRef = useRef('')
+  const laatsteInteractieRef = useRef(0)
+  const onRefreshRef = useRef(onRefresh)
+  onRefreshRef.current = onRefresh
+  lokaalRef.current = snapshotVan({
+    naam,
+    type,
+    datum,
+    publiek,
+    doelmarge,
+    kortingReden,
+    toewijzingen,
+    reg: [...reg.values()]
+  })
+  opgeslagenRef.current = snapshotVan({
+    naam: feest.naam,
+    type: feest.type_feest,
+    datum: feest.datum,
+    publiek: feest.publiek,
+    doelmarge: feest.doelmarge,
+    kortingReden: feest.korting_reden,
+    toewijzingen: feest.toewijzingen,
+    reg: feest.registraties
+  })
+  useEffect(() => {
+    // Only the PC auto-refreshes (to pick up input typed on a phone). The
+    // phone itself is the active editor and must never reload itself away
+    // from in-progress input — that's exactly what made saved input "vanish".
+    if (isWeb) return
+    const id = setInterval(() => {
+      const pristine = lokaalRef.current === opgeslagenRef.current
+      const idle = Date.now() - laatsteInteractieRef.current > 20000
+      if (pristine && idle) onRefreshRef.current()
+    }, 10000)
+    return () => clearInterval(id)
+  }, [isWeb])
 
   const setRegVeld = (drankId: number, veld: keyof Registratie, val: number): void =>
     setReg((prev) => {
@@ -106,6 +237,25 @@ function FeestForm({
   const teTonen = alleDranken ? dranken : dranken.filter((d) => toegestaneIds.has(d.id))
   const aantalPersonen = toewijzingen.reduce((s, t) => s + t.aantal_personen, 0)
 
+  // Duration-based price suggestion, front-loaded vs each forfait's standard duration.
+  const clampDuur = (n: number): number => Math.min(16, Math.max(1, Math.round(n * 2) / 2))
+  const standaardDuurVan = (forfaitId: number | null): number =>
+    forfaits.find((x) => x.id === forfaitId)?.standaardduur_uur ?? 1.5
+  const basisPrijs = (forfaitId: number | null): number => {
+    const f = forfaits.find((x) => x.id === forfaitId)
+    return f ? forfaitPrijs(f, dranken) : 0
+  }
+  const prijsMetDuur = (forfaitId: number | null, duur: number): number => {
+    const f = forfaits.find((x) => x.id === forfaitId)
+    if (!f) return 0
+    return euro(forfaitPrijs(f, dranken) * duurFactor(duur, f.standaardduur_uur ?? 1.5, eersteUur, extraUur))
+  }
+  /** Uplift/downlift derived from the actual price vs the base price. */
+  const upliftPct = (t: Toewijzing): number => {
+    const basis = basisPrijs(t.forfait_id)
+    return basis > 0 ? t.forfaitprijs_per_persoon / basis - 1 : 0
+  }
+
   const bewaarFeest = async (): Promise<void> => {
     await api.feesten.upsert({
       id: feest.id,
@@ -119,31 +269,55 @@ function FeestForm({
       toewijzingen
     })
     onSaved()
-    toast('Feest opgeslagen', 'good')
+  }
+
+  const foutmelding = (e: unknown): string =>
+    e instanceof Error ? e.message : String(e)
+
+  // The "Opslaan" buttons. Always confirm explicitly, and surface any failure
+  // — a silent error is what made the phone's input seem to "vanish".
+  const opslaan = async (): Promise<void> => {
+    try {
+      await bewaarFeest()
+      toast('Feest opgeslagen', 'good')
+    } catch (e) {
+      toast('Bewaren mislukt: ' + foutmelding(e), 'bad')
+    }
   }
 
   const herneemSnapshot = async (): Promise<void> => {
-    const snapshot = await api.snapshot.build()
-    await api.feesten.upsert({
-      id: feest.id,
-      naam,
-      type_feest: type,
-      datum,
-      publiek: publiek || null,
-      doelmarge,
-      korting_reden: kortingReden || null,
-      prijs_momentopname: snapshot,
-      toewijzingen
-    })
-    onSaved()
-    toast('Prijzen opnieuw vastgelegd', 'good')
+    try {
+      const snapshot = await api.snapshot.build()
+      await api.feesten.upsert({
+        id: feest.id,
+        naam,
+        type_feest: type,
+        datum,
+        publiek: publiek || null,
+        doelmarge,
+        korting_reden: kortingReden || null,
+        prijs_momentopname: snapshot,
+        toewijzingen
+      })
+      onSaved()
+      toast('Prijzen opnieuw vastgelegd', 'good')
+    } catch (e) {
+      toast('Bewaren mislukt: ' + foutmelding(e), 'bad')
+    }
   }
 
   const bewaarRegistratie = async (): Promise<void> => {
-    await bewaarFeest()
-    await api.feesten.saveRegistraties(feest.id, [...reg.values()])
-    toast('Registratie opgeslagen', 'good')
-    onResultaat()
+    try {
+      await bewaarFeest()
+      await api.feesten.saveRegistraties(feest.id, [...reg.values()])
+      toast('Registratie opgeslagen', 'good')
+      // On a phone, stay on the form and reload so the saved input is visibly
+      // confirmed (it now matches the server). On the PC, go to the result.
+      if (isWeb) onSaved()
+      else onResultaat()
+    } catch (e) {
+      toast('Bewaren mislukt: ' + foutmelding(e), 'bad')
+    }
   }
 
   const verwijder = async (): Promise<void> => {
@@ -152,8 +326,12 @@ function FeestForm({
     onDeleted()
   }
 
+  const markeerInteractie = (): void => {
+    laatsteInteractieRef.current = Date.now()
+  }
+
   return (
-    <div>
+    <div onInputCapture={markeerInteractie} onFocusCapture={markeerInteractie}>
       <PageHeader
         title={naam || 'Feest'}
         subtitle="Eerst de opzet en de toewijzingen. Daarna, na het feest, de registratie van wat er gedronken is."
@@ -162,7 +340,10 @@ function FeestForm({
             <button className="btn-ghost" onClick={verwijder}>
               Verwijderen
             </button>
-            <button className="btn-outline" onClick={bewaarFeest}>
+            <button className="btn-outline" onClick={onBlad}>
+              Afdrukbaar blad
+            </button>
+            <button className="btn-outline" onClick={opslaan}>
               Opslaan
             </button>
           </>
@@ -196,7 +377,7 @@ function FeestForm({
           <Field label="Publiek (optioneel)">
             <input className="input" value={publiek} onChange={(e) => setPubliek(e.target.value)} />
           </Field>
-          <Field label="Doelmarge (%)" hint="Lager dan standaard = korting voor dit feest">
+          <Field label="Doel (%)" hint="Doel voor dit feest: % boven verkoop per glas">
             <NumberInput
               value={doelmarge * 100}
               onCommit={(n) => setDoelmarge(n / 100)}
@@ -229,7 +410,9 @@ function FeestForm({
                   forfait_id: forfaits[0]?.id ?? null,
                   forfait_naam: forfaits[0]?.naam ?? '',
                   aantal_personen: 0,
-                  forfaitprijs_per_persoon: forfaits[0] ? forfaitPrijs(forfaits[0], dranken) : 0
+                  forfaitprijs_per_persoon: basisPrijs(forfaits[0]?.id ?? null),
+                  korting_pct: 0,
+                  duur_uur: standaardDuurVan(forfaits[0]?.id ?? null)
                 }
               ])
             }
@@ -245,7 +428,7 @@ function FeestForm({
         <div className="space-y-3">
           {toewijzingen.map((t, i) => (
             <div key={i} className="grid grid-cols-12 gap-3 items-end">
-              <div className="col-span-5">
+              <div className="col-span-3">
                 <Field label="Forfait">
                   <select
                     className="input"
@@ -260,9 +443,8 @@ function FeestForm({
                                 ...x,
                                 forfait_id: fid,
                                 forfait_naam: f?.naam ?? '',
-                                forfaitprijs_per_persoon: f
-                                  ? forfaitPrijs(f, dranken)
-                                  : x.forfaitprijs_per_persoon
+                                duur_uur: f ? standaardDuurVan(fid) : x.duur_uur,
+                                forfaitprijs_per_persoon: f ? basisPrijs(fid) : x.forfaitprijs_per_persoon
                               }
                             : x
                         )
@@ -278,7 +460,7 @@ function FeestForm({
                   </select>
                 </Field>
               </div>
-              <div className="col-span-3">
+              <div className="col-span-2">
                 <Field label="Personen">
                   <NumberInput
                     value={t.aantal_personen}
@@ -290,8 +472,35 @@ function FeestForm({
                   />
                 </Field>
               </div>
-              <div className="col-span-3">
-                <Field label="Prijs / persoon">
+              <div className="col-span-2">
+                <Field label="Duur (u)" hint="1–16 u, per half uur">
+                  <NumberInput
+                    value={t.duur_uur ?? 1.5}
+                    onCommit={(n) => {
+                      const duur = clampDuur(n)
+                      setToewijzingen((prev) =>
+                        prev.map((x, j) =>
+                          j === i
+                            ? {
+                                ...x,
+                                duur_uur: duur,
+                                forfaitprijs_per_persoon: x.forfait_id
+                                  ? prijsMetDuur(x.forfait_id, duur)
+                                  : x.forfaitprijs_per_persoon
+                              }
+                            : x
+                        )
+                      )
+                    }}
+                    suffix="u"
+                  />
+                </Field>
+              </div>
+              <div className="col-span-2">
+                <Field
+                  label="Prijs / persoon"
+                  hint={`${upliftPct(t) >= 0 ? '+' : ''}${formatPercent(upliftPct(t))} t.o.v. basis`}
+                >
                   <NumberInput
                     value={t.forfaitprijs_per_persoon}
                     onCommit={(n) =>
@@ -300,6 +509,26 @@ function FeestForm({
                       )
                     }
                     suffix="€"
+                  />
+                </Field>
+              </div>
+              <div className="col-span-2">
+                <Field
+                  label="Korting"
+                  hint={
+                    (t.korting_pct ?? 0) > 0
+                      ? `netto ${formatEuro(t.forfaitprijs_per_persoon * (1 - (t.korting_pct ?? 0) / 100))}/pers`
+                      : 'korting'
+                  }
+                >
+                  <NumberInput
+                    value={t.korting_pct ?? 0}
+                    onCommit={(n) =>
+                      setToewijzingen((prev) =>
+                        prev.map((x, j) => (j === i ? { ...x, korting_pct: n } : x))
+                      )
+                    }
+                    suffix="%"
                   />
                 </Field>
               </div>
@@ -331,14 +560,35 @@ function FeestForm({
           <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wide">
             Registratie na het feest
           </h2>
-          <label className="flex items-center gap-2 text-xs text-ink-soft">
-            <input
-              type="checkbox"
-              checked={alleDranken}
-              onChange={(e) => setAlleDranken(e.target.checked)}
-            />
-            Toon alle dranken
-          </label>
+          <div className="flex items-center gap-4">
+            {!isWeb && (
+              <>
+                <button
+                  className="text-xs text-amber-700 hover:underline"
+                  onClick={() => {
+                    onRefresh()
+                    toast('Vernieuwd — laatste invoer opgehaald')
+                  }}
+                >
+                  ↻ Vernieuwen
+                </button>
+                <button
+                  className="text-xs text-amber-700 hover:underline"
+                  onClick={() => setMobielOpen(true)}
+                >
+                  📱 Open op gsm
+                </button>
+              </>
+            )}
+            <label className="flex items-center gap-2 text-xs text-ink-soft">
+              <input
+                type="checkbox"
+                checked={alleDranken}
+                onChange={(e) => setAlleDranken(e.target.checked)}
+              />
+              Toon alle dranken
+            </label>
+          </div>
         </div>
         <p className="text-xs text-ink-faint mb-4">
           Tel het leeggoed, de lege flessen, de aangebroken vaten en de cocktails. In zestig
@@ -364,7 +614,7 @@ function FeestForm({
         )}
 
         <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-cream-deep">
-          <button className="btn-outline" onClick={bewaarFeest}>
+          <button className="btn-outline" onClick={opslaan}>
             Opslaan zonder resultaat
           </button>
           <button className="btn-primary" onClick={bewaarRegistratie}>
@@ -372,6 +622,10 @@ function FeestForm({
           </button>
         </div>
       </Card>
+
+      {mobielOpen && (
+        <MobielModal pad={`/feesten/${feest.id}`} onClose={() => setMobielOpen(false)} />
+      )}
     </div>
   )
 }
@@ -388,7 +642,7 @@ function RegistratieRij({
   onSet: (veld: keyof Registratie, val: number) => void
 }): JSX.Element {
   return (
-    <div className="flex items-center gap-3 py-1.5 px-3 rounded-xl hover:bg-cream/60">
+    <div className="flex flex-wrap items-center gap-3 py-1.5 px-3 rounded-xl hover:bg-cream/60">
       <div className="flex-1 min-w-0">
         <div className="text-sm font-medium text-ink truncate">{drank.naam}</div>
         <div className="text-xs text-ink-faint">

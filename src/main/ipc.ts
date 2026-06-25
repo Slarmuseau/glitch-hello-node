@@ -7,6 +7,7 @@ import { writeFileSync, readFileSync, copyFileSync } from 'fs'
 import { basename } from 'path'
 import { coreHandlers } from './handlers'
 import { getDatabasePath } from './db/database'
+import { getLanInfo } from './lanServer'
 import { buildExport, restoreImport, drankenCsv } from './services/dataio'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -63,7 +64,8 @@ const electronHandlers: Record<string, Handler> = {
   'data:revealDb': () => {
     shell.showItemInFolder(getDatabasePath())
     return { ok: true, naam: basename(getDatabasePath()) }
-  }
+  },
+  'net:info': () => getLanInfo()
 }
 
 export function registerIpc(): void {

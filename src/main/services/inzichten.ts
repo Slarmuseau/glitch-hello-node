@@ -1,13 +1,18 @@
-// Inzichten — holistic conclusions across all registered parties. Aggregates
-// the per-party results (built from each party's own price snapshot) into
-// rankings, per-type and per-forfait performance, a discount ledger, and a set
-// of plain-language pieces of advice. The owner reads conclusions, not tables.
+// Inzichten — factual figures across all registered parties. No written advice;
+// the numbers speak for themselves. Aggregates each party's snapshot-based
+// result into rankings, per-type and per-forfait performance, an alcohol split,
+// the highest-margin drinks (to promote), and a discount ledger.
 
-import { formatPercent, formatEuro, formatNumber } from '@shared/domain'
-import { listFeestOverzicht, getInstellingen } from '../db/repo'
+import { kostprijsPerConsumptie, type Vat } from '@shared/domain'
+import {
+  listFeestOverzicht,
+  getInstellingen,
+  listForfaits,
+  listDranken,
+  listVaten
+} from '../db/repo'
 import { buildResultaat } from './resultaat'
 import { forfaitHistoriek } from './forfaitHistoriek'
-import { listForfaits } from '../db/repo'
 
 const TYPE_LABEL: Record<string, string> = {
   huwelijk: 'Huwelijk',
@@ -18,15 +23,32 @@ const TYPE_LABEL: Record<string, string> = {
   andere: 'Andere'
 }
 
+// Heuristic split by category (refine later with a per-drink flag if needed).
+const NON_ALCOHOLISCH = new Set(['Soft', 'Warm', 'Alcoholvrij bier', 'Mocktails'])
+function isAlcoholisch(categorie: string): boolean {
+  return !NON_ALCOHOLISCH.has(categorie)
+}
+
 export interface DrankAggregaat {
   drank_id: number
   naam: string
   categorie: string
   consumpties: number
   aandeel_consumpties: number
+  omzet: number
   inkoopkost: number
   aandeel_kost: number
   kost_per_consumptie: number
+}
+
+export interface MargeRegel {
+  drank_id: number
+  naam: string
+  categorie: string
+  menuprijs: number
+  kost: number
+  marge_per_glas: number
+  marge_pct: number
 }
 
 export interface TypePrestatie {
@@ -47,15 +69,27 @@ export interface ForfaitPrestatie {
   richtprijs_historiek: number | null
 }
 
+export interface FeestRanking {
+  feest_id: number
+  naam: string
+  type_feest: string
+  label: string
+  datum: string
+  aantal_personen: number
+  forfaitmarge: number
+  alacarte_verschil: number
+  resultaat: number
+}
+
 export interface KortingRegel {
   reden: string
   aantal_feesten: number
   weggegeven: number
 }
 
-export interface Advies {
-  tone: 'goed' | 'let_op' | 'tip'
-  tekst: string
+export interface AlcoholDeel {
+  consumpties: number
+  omzet: number
 }
 
 export interface Inzichten {
@@ -64,32 +98,44 @@ export interface Inzichten {
   globaal_resultaat: number
   totaal_omzet: number
   totaal_kost: number
+  totaal_alacarte: number
+  totaal_consumpties: number
+  consumpties_per_persoon: number
+  alcohol: { alcoholisch: AlcoholDeel; nonalcoholisch: AlcoholDeel }
   drankRanking: DrankAggregaat[]
   zeldenGedronken: DrankAggregaat[]
-  categorieMix: { categorie: string; consumpties: number; inkoopkost: number }[]
+  margeRanking: MargeRegel[]
+  categorieMix: { categorie: string; consumpties: number; omzet: number; inkoopkost: number }[]
   typePrestatie: TypePrestatie[]
   forfaitPrestatie: ForfaitPrestatie[]
+  feestRanking: FeestRanking[]
   kortingLedger: KortingRegel[]
   kortingTotaal: number
-  advies: Advies[]
 }
 
-export function buildInzichten(): Inzichten {
+export function buildInzichten(van?: string | null, tot?: string | null): Inzichten {
   const inst = getInstellingen()
-  const overzicht = listFeestOverzicht().filter((f) => f.geregistreerd)
+  const overzicht = listFeestOverzicht().filter(
+    (f) => f.geregistreerd && (!van || f.datum >= van) && (!tot || f.datum <= tot)
+  )
   const forfaits = listForfaits()
 
   const dranken = new Map<number, DrankAggregaat>()
-  const categorie = new Map<string, { consumpties: number; inkoopkost: number }>()
+  const categorie = new Map<string, { consumpties: number; omzet: number; inkoopkost: number }>()
   const perType = new Map<
     string,
     { feesten: number; margeSom: number; verwachtSom: number; werkelijkSom: number }
   >()
   const perForfait = new Map<number, { feesten: number; gehaald: number; margeSom: number }>()
   const korting = new Map<string, { feesten: number; weggegeven: number }>()
+  const feestRanking: FeestRanking[] = []
+  const alcohol = { alcoholisch: { consumpties: 0, omzet: 0 }, nonalcoholisch: { consumpties: 0, omzet: 0 } }
 
   let totaalOmzet = 0
   let totaalKost = 0
+  let totaalAlacarte = 0
+  let totaalConsumpties = 0
+  let totaalPersonen = 0
   let resultaatSom = 0
   let kortingTotaal = 0
 
@@ -100,6 +146,9 @@ export function buildInzichten(): Inzichten {
 
     totaalOmzet += r.forfait_omzet
     totaalKost += r.totaal_inkoopkost
+    totaalAlacarte += r.alacarte_omzet
+    totaalConsumpties += r.totaal_consumpties
+    totaalPersonen += r.aantal_personen
     resultaatSom += r.resultaat
 
     for (const regel of r.regels) {
@@ -109,18 +158,25 @@ export function buildInzichten(): Inzichten {
         categorie: regel.categorie,
         consumpties: 0,
         aandeel_consumpties: 0,
+        omzet: 0,
         inkoopkost: 0,
         aandeel_kost: 0,
         kost_per_consumptie: 0
       }
       agg.consumpties += regel.consumpties
+      agg.omzet += regel.alacarte_omzet
       agg.inkoopkost += regel.inkoopkost
       dranken.set(regel.drank_id, agg)
 
-      const cat = categorie.get(regel.categorie) ?? { consumpties: 0, inkoopkost: 0 }
+      const cat = categorie.get(regel.categorie) ?? { consumpties: 0, omzet: 0, inkoopkost: 0 }
       cat.consumpties += regel.consumpties
+      cat.omzet += regel.alacarte_omzet
       cat.inkoopkost += regel.inkoopkost
       categorie.set(regel.categorie, cat)
+
+      const bak = isAlcoholisch(regel.categorie) ? alcohol.alcoholisch : alcohol.nonalcoholisch
+      bak.consumpties += regel.consumpties
+      bak.omzet += regel.alacarte_omzet
     }
 
     const t = perType.get(f.type_feest) ?? { feesten: 0, margeSom: 0, verwachtSom: 0, werkelijkSom: 0 }
@@ -140,24 +196,34 @@ export function buildInzichten(): Inzichten {
       perForfait.set(forfait.id, p)
     }
 
-    // Discount ledger: margin cushion forgone vs the standard floor.
-    if (f.doelmarge < inst.standaard_doelmarge) {
-      const weggegeven = r.forfait_omzet * (inst.standaard_doelmarge - f.doelmarge)
-      kortingTotaal += weggegeven
+    feestRanking.push({
+      feest_id: f.id,
+      naam: f.naam,
+      type_feest: f.type_feest,
+      label: TYPE_LABEL[f.type_feest] ?? f.type_feest,
+      datum: f.datum,
+      aantal_personen: r.aantal_personen,
+      forfaitmarge: r.forfaitmarge,
+      alacarte_verschil: r.alacarte_verschil,
+      resultaat: r.resultaat
+    })
+
+    if (r.totaal_korting > 0) {
+      kortingTotaal += r.totaal_korting
       const reden = f.korting_reden?.trim() || 'geen reden opgegeven'
       const k = korting.get(reden) ?? { feesten: 0, weggegeven: 0 }
       k.feesten += 1
-      k.weggegeven += weggegeven
+      k.weggegeven += r.totaal_korting
       korting.set(reden, k)
     }
   }
 
-  const totaalConsumpties = [...dranken.values()].reduce((s, d) => s + d.consumpties, 0)
+  const totaalDrankConsumpties = [...dranken.values()].reduce((s, d) => s + d.consumpties, 0)
   const totaalDrankKost = [...dranken.values()].reduce((s, d) => s + d.inkoopkost, 0)
 
   const drankList = [...dranken.values()].map((d) => ({
     ...d,
-    aandeel_consumpties: totaalConsumpties > 0 ? d.consumpties / totaalConsumpties : 0,
+    aandeel_consumpties: totaalDrankConsumpties > 0 ? d.consumpties / totaalDrankConsumpties : 0,
     aandeel_kost: totaalDrankKost > 0 ? d.inkoopkost / totaalDrankKost : 0,
     kost_per_consumptie: d.consumpties > 0 ? d.inkoopkost / d.consumpties : 0
   }))
@@ -166,7 +232,25 @@ export function buildInzichten(): Inzichten {
   const zeldenGedronken = [...drankList]
     .filter((d) => d.consumpties > 0)
     .sort((a, b) => a.consumpties - b.consumpties)
-    .slice(0, 6)
+    .slice(0, 8)
+
+  // Highest margin per glass, from TODAY's prices (what to promote).
+  const vaten = new Map<number, Vat>(listVaten().map((v) => [v.id, v]))
+  const margeRanking: MargeRegel[] = listDranken()
+    .filter((d) => d.menuprijs > 0)
+    .map((d) => {
+      const kost = kostprijsPerConsumptie(d, d.vat_id ? vaten.get(d.vat_id) ?? null : null)
+      return {
+        drank_id: d.id,
+        naam: d.naam,
+        categorie: d.categorie,
+        menuprijs: d.menuprijs,
+        kost,
+        marge_per_glas: d.menuprijs - kost,
+        marge_pct: (d.menuprijs - kost) / d.menuprijs
+      }
+    })
+    .sort((a, b) => b.marge_per_glas - a.marge_per_glas)
 
   const typePrestatie: TypePrestatie[] = [...perType.entries()]
     .map(([type, v]) => ({
@@ -177,7 +261,7 @@ export function buildInzichten(): Inzichten {
       gemiddeld_verwacht_per_hoofd: v.verwachtSom / v.feesten,
       gemiddeld_werkelijk_per_hoofd: v.werkelijkSom / v.feesten
     }))
-    .sort((a, b) => b.aantal_feesten - a.aantal_feesten)
+    .sort((a, b) => b.gemiddelde_marge - a.gemiddelde_marge)
 
   const forfaitPrestatie: ForfaitPrestatie[] = [...perForfait.entries()]
     .map(([id, v]) => {
@@ -192,7 +276,7 @@ export function buildInzichten(): Inzichten {
         richtprijs_historiek: hist.voorgestelde_prijs
       }
     })
-    .sort((a, b) => b.aantal_feesten - a.aantal_feesten)
+    .sort((a, b) => b.gemiddelde_marge - a.gemiddelde_marge)
 
   const kortingLedger: KortingRegel[] = [...korting.entries()]
     .map(([reden, v]) => ({ reden, aantal_feesten: v.feesten, weggegeven: v.weggegeven }))
@@ -202,133 +286,26 @@ export function buildInzichten(): Inzichten {
     .map(([categorie, v]) => ({ categorie, ...v }))
     .sort((a, b) => b.consumpties - a.consumpties)
 
+  feestRanking.sort((a, b) => b.forfaitmarge - a.forfaitmarge)
+
   return {
     aantal_feesten: overzicht.length,
-    globale_marge: totaalOmzet > 0 ? (totaalOmzet - totaalKost) / totaalOmzet : 0,
+    globale_marge: totaalAlacarte > 0 ? (totaalOmzet - totaalAlacarte) / totaalAlacarte : 0,
     globaal_resultaat: resultaatSom,
     totaal_omzet: totaalOmzet,
     totaal_kost: totaalKost,
+    totaal_alacarte: totaalAlacarte,
+    totaal_consumpties: totaalConsumpties,
+    consumpties_per_persoon: totaalPersonen > 0 ? totaalConsumpties / totaalPersonen : 0,
+    alcohol,
     drankRanking,
     zeldenGedronken,
+    margeRanking,
     categorieMix,
     typePrestatie,
     forfaitPrestatie,
+    feestRanking,
     kortingLedger,
-    kortingTotaal,
-    advies: maakAdvies({
-      drankRanking,
-      zeldenGedronken,
-      typePrestatie,
-      forfaitPrestatie,
-      kortingTotaal,
-      globaleMarge: totaalOmzet > 0 ? (totaalOmzet - totaalKost) / totaalOmzet : 0,
-      doelmarge: inst.standaard_doelmarge
-    })
+    kortingTotaal
   }
-}
-
-function maakAdvies(d: {
-  drankRanking: DrankAggregaat[]
-  zeldenGedronken: DrankAggregaat[]
-  typePrestatie: TypePrestatie[]
-  forfaitPrestatie: ForfaitPrestatie[]
-  kortingTotaal: number
-  globaleMarge: number
-  doelmarge: number
-}): Advies[] {
-  const advies: Advies[] = []
-
-  // Overall health.
-  if (d.globaleMarge >= d.doelmarge) {
-    advies.push({
-      tone: 'goed',
-      tekst: `Over alle feesten heen haal je een marge van ${formatPercent(
-        d.globaleMarge
-      )}, boven je doelmarge van ${formatPercent(d.doelmarge)}. Mooi werk.`
-    })
-  } else {
-    advies.push({
-      tone: 'let_op',
-      tekst: `Je globale marge is ${formatPercent(d.globaleMarge)}, onder je doelmarge van ${formatPercent(
-        d.doelmarge
-      )}. Bekijk de forfaits hieronder die het vaakst onder de ondergrens duiken.`
-    })
-  }
-
-  // Forfaits that often miss the floor.
-  for (const f of d.forfaitPrestatie) {
-    if (f.aantal_feesten < 2) continue
-    const ratio = f.aantal_gehaald / f.aantal_feesten
-    if (ratio < 0.6) {
-      const prijs = f.richtprijs_historiek
-        ? ` Een prijs van ${formatEuro(f.richtprijs_historiek)} (uit je historiek) zou je ondergrens halen.`
-        : ''
-      advies.push({
-        tone: 'let_op',
-        tekst: `“${f.forfait_naam}” haalt maar in ${f.aantal_gehaald} van ${f.aantal_feesten} feesten je ondergrens.${prijs}`
-      })
-    } else if (ratio === 1) {
-      advies.push({
-        tone: 'goed',
-        tekst: `“${f.forfait_naam}” haalde in alle ${f.aantal_feesten} feesten je ondergrens — een betrouwbaar forfait.`
-      })
-    }
-  }
-
-  // Crowds that out-drink their forfait.
-  for (const t of d.typePrestatie) {
-    if (t.aantal_feesten < 2 || t.gemiddeld_verwacht_per_hoofd <= 0) continue
-    const verschil =
-      (t.gemiddeld_werkelijk_per_hoofd - t.gemiddeld_verwacht_per_hoofd) /
-      t.gemiddeld_verwacht_per_hoofd
-    if (verschil > 0.15) {
-      advies.push({
-        tone: 'tip',
-        tekst: `${t.label} drinkt gemiddeld ${formatPercent(
-          verschil
-        )} méér dan verwacht (${formatNumber(t.gemiddeld_werkelijk_per_hoofd)} vs ${formatNumber(
-          t.gemiddeld_verwacht_per_hoofd
-        )} per hoofd). Verhoog de verwachte consumpties of de prijs voor dit type.`
-      })
-    }
-  }
-
-  // Drinks that weigh most on the margin (popular AND expensive per glass).
-  const risico = [...d.drankRanking]
-    .filter((x) => x.consumpties > 0)
-    .sort((a, b) => b.inkoopkost - a.inkoopkost)[0]
-  if (risico) {
-    advies.push({
-      tone: 'tip',
-      tekst: `“${risico.naam}” weegt het zwaarst op je marge: ${formatEuro(
-        risico.inkoopkost
-      )} inkoopkost (${formatPercent(risico.aandeel_kost)} van alle drankkost), aan ${formatEuro(
-        risico.kost_per_consumptie
-      )} per consumptie.`
-    })
-  }
-
-  // Rarely poured drinks.
-  if (d.zeldenGedronken.length > 0) {
-    const z = d.zeldenGedronken[0]
-    advies.push({
-      tone: 'tip',
-      tekst: `“${z.naam}” werd amper geschonken (${formatNumber(
-        z.consumpties,
-        0
-      )} consumpties in totaal). Overweeg ze te schrappen of net te promoten.`
-    })
-  }
-
-  // Discounts given.
-  if (d.kortingTotaal > 0) {
-    advies.push({
-      tone: 'tip',
-      tekst: `Je gaf dit jaar ongeveer ${formatEuro(
-        d.kortingTotaal
-      )} aan margebuffer weg via kortingen. Dat is geen verlies, maar wel een bewuste keuze om trots op te zijn.`
-    })
-  }
-
-  return advies
 }

@@ -57,7 +57,7 @@ export const coreHandlers: Record<string, CoreHandler> = {
     saveRegistraties(feestId, registraties),
 
   'resultaat:build': (feestId) => buildResultaat(feestId),
-  'inzichten:build': () => buildInzichten(),
+  'inzichten:build': (p) => buildInzichten(p?.van, p?.tot),
   'snapshot:build': () => buildPrijsMomentopname(),
 
   'instellingen:get': () => getInstellingen(),

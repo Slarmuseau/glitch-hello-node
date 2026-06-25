@@ -1,10 +1,15 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { api } from '../lib/api'
 import { useData } from '../lib/hooks'
 import { PageHeader, Card, Field } from '../components/ui'
 import { NumberInput } from '../components/NumberInput'
 import { useToast } from '../components/Toast'
-import type { Instellingen as InstellingenType, MargeConventie } from '@shared/domain'
+import {
+  duurFactor,
+  formatNumber,
+  type Instellingen as InstellingenType,
+  type MargeConventie
+} from '@shared/domain'
 
 export default function Instellingen(): JSX.Element {
   const toast = useToast()
@@ -29,14 +34,20 @@ export default function Instellingen(): JSX.Element {
         <Card>
           <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wide mb-4">Marge</h2>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Standaard doelmarge (%)" hint="De ondergrens op je forfaitmarge">
+            <Field
+              label="Doel: % méér dan verkoop per glas"
+              hint="0% = even goed als per glas. Enkele % is een mooi doel."
+            >
               <NumberInput
                 value={data.standaard_doelmarge * 100}
                 onCommit={(n) => save({ standaard_doelmarge: n / 100 })}
                 suffix="%"
               />
             </Field>
-            <Field label="Marge-conventie" hint="De twee geven verschillende prijzen — kies je eigen betekenis">
+            <Field
+              label="Marge-conventie (2de inzicht)"
+              hint="Enkel voor de marge op inkoopkost; het forfait zelf is niet kost-plus."
+            >
               <select
                 className="input"
                 value={data.marge_conventie}
@@ -60,13 +71,10 @@ export default function Instellingen(): JSX.Element {
                 onBlur={(e) => save({ bedrijfsnaam: e.target.value })}
               />
             </Field>
-            <Field label="Logo-bestand (pad)" hint="Voor in de koptekst en op de afdrukbladen">
-              <input
-                className="input"
-                defaultValue={data.logo_pad ?? ''}
-                onBlur={(e) => save({ logo_pad: e.target.value || null })}
-              />
-            </Field>
+            <div>
+              <span className="label">Logo van de zaak</span>
+              <LogoKiezer logo={data.logo_pad} onChange={(v) => save({ logo_pad: v })} />
+            </div>
             <Field label="Adres en gegevens">
               <textarea
                 className="input min-h-[80px]"
@@ -87,6 +95,9 @@ export default function Instellingen(): JSX.Element {
 
         {/* Categorieen */}
         <CategorieBeheer data={data} onSave={save} />
+
+        {/* Drinkprofiel (duur) */}
+        <DrinkprofielBeheer data={data} onSave={save} />
 
         {/* Data */}
         <Card>
@@ -164,6 +175,95 @@ export default function Instellingen(): JSX.Element {
         </Card>
       </div>
     </div>
+  )
+}
+
+function LogoKiezer({
+  logo,
+  onChange
+}: {
+  logo: string | null | undefined
+  onChange: (v: string | null) => void
+}): JSX.Element {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const kies = (file?: File): void => {
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => onChange(String(reader.result))
+    reader.readAsDataURL(file)
+  }
+  return (
+    <div>
+      {logo ? (
+        <img
+          src={logo}
+          alt="Logo"
+          className="h-16 max-w-[220px] object-contain mb-2 rounded-md border border-cream-deep bg-white p-1"
+        />
+      ) : (
+        <div className="text-xs text-ink-faint mb-2">Nog geen logo gekozen.</div>
+      )}
+      <div className="flex gap-2">
+        <button className="btn-outline" onClick={() => inputRef.current?.click()}>
+          Logo kiezen
+        </button>
+        {logo && (
+          <button className="btn-ghost" onClick={() => onChange(null)}>
+            Verwijderen
+          </button>
+        )}
+      </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => kies(e.target.files?.[0])}
+      />
+      <span className="block text-xs text-ink-faint mt-1">
+        Verschijnt op het afdrukblad en het overzicht. PNG of JPG.
+      </span>
+    </div>
+  )
+}
+
+function DrinkprofielBeheer({
+  data,
+  onSave
+}: {
+  data: InstellingenType
+  onSave: (patch: Partial<InstellingenType>) => Promise<void>
+}): JSX.Element {
+  const eerste = data.duur_gewicht_eerste_uur ?? 2
+  const extra = data.duur_gewicht_extra_uur ?? 1
+  const voorbeeld = (duur: number): string => {
+    const f = duurFactor(duur, 1.5, eerste, extra)
+    return `${f >= 1 ? '+' : ''}${formatNumber((f - 1) * 100, 0)}%`
+  }
+  return (
+    <Card>
+      <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wide mb-2">
+        Drinkprofiel (duur)
+      </h2>
+      <p className="text-sm text-ink-soft mb-4">
+        Mensen drinken het meest in het eerste uur. Stel in hoe zwaar het eerste uur weegt
+        tegenover elk volgend uur. Dit bepaalt de <strong>prijsvoorstellen</strong> en de
+        verwachte consumpties bij langere of kortere groepen (de standaardduur stel je per forfait
+        in). Je beslist altijd zelf de uiteindelijke prijs.
+      </p>
+      <div className="grid grid-cols-2 gap-4 max-w-md">
+        <Field label="Gewicht eerste uur" hint="bv. 2">
+          <NumberInput value={eerste} onCommit={(n) => onSave({ duur_gewicht_eerste_uur: n })} />
+        </Field>
+        <Field label="Gewicht per volgend uur" hint="bv. 1">
+          <NumberInput value={extra} onCommit={(n) => onSave({ duur_gewicht_extra_uur: n })} />
+        </Field>
+      </div>
+      <div className="text-xs text-ink-faint mt-3">
+        Voorbeeld t.o.v. een standaard van 1,5 u: 1 u {voorbeeld(1)} · 2 u {voorbeeld(2)} · 4 u{' '}
+        {voorbeeld(4)} · 8 u {voorbeeld(8)}.
+      </div>
+    </Card>
   )
 }
 

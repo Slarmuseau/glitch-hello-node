@@ -9,6 +9,7 @@ export default function Overzicht(): JSX.Element {
   const dranken = useData(() => api.dranken.list())
   const forfaits = useData(() => api.forfaits.list())
   const feesten = useData(() => api.feesten.overzicht())
+  const inst = useData(() => api.instellingen.get())
 
   const lijst = feesten.data ?? []
   const metKorting = lijst.filter((f) => f.korting_reden)
@@ -16,7 +17,16 @@ export default function Overzicht(): JSX.Element {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-display text-ink">Welkom bij Tapwijs</h1>
+        {inst.data?.logo_pad && (
+          <img
+            src={inst.data.logo_pad}
+            alt={inst.data.bedrijfsnaam || ''}
+            className="h-20 max-w-[320px] object-contain mb-4"
+          />
+        )}
+        <h1 className="text-3xl font-display text-ink">
+          {inst.data?.bedrijfsnaam ? `Welkom, ${inst.data.bedrijfsnaam}` : 'Welkom bij Tapwijs'}
+        </h1>
         <p className="text-ink-soft mt-2 max-w-2xl">
           Je drankprijzen, je forfaits en je marges — rustig op één plek. Pas je prijzen aan,
           registreer wat een feest dronk, en zie meteen wat het opbracht.

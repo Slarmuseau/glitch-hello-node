@@ -5,6 +5,7 @@ import { openDatabase } from './db/database'
 import { isGeinitialiseerd, markGeinitialiseerd } from './db/repo'
 import { seedDemoData } from './services/seed'
 import { registerIpc } from './ipc'
+import { startLanServer } from './lanServer'
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -54,6 +55,9 @@ app.whenReady().then(() => {
   }
 
   registerIpc()
+
+  // Let phones on the same Wi-Fi fill in the registration (shares this DB).
+  startLanServer(join(__dirname, '../renderer'))
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)

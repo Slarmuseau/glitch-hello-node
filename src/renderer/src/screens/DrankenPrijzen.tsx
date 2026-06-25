@@ -65,6 +65,8 @@ export default function DrankenPrijzen(): JSX.Element {
           De inkoopprijzen uit de demo zijn <strong>geschatte inkoopprijzen</strong>. Vervang ze
           door je eigen cijfers. De inkoop staat in de eenheid waarin je koopt: per stuk, per fles
           of per vat. De kostprijs per consumptie wordt automatisch berekend.
+          <br />
+          <strong>Alle prijzen zijn in euro (€).</strong>
         </p>
       </Card>
 
@@ -79,8 +81,8 @@ export default function DrankenPrijzen(): JSX.Element {
                 <thead>
                   <tr className="text-left text-xs uppercase tracking-wide text-ink-faint border-b border-cream-deep">
                     <th className="px-4 py-3 font-medium">Drank</th>
-                    <th className="px-4 py-3 font-medium w-44">Inkoop</th>
-                    <th className="px-4 py-3 font-medium w-32">Menuprijs</th>
+                    <th className="px-4 py-3 font-medium w-44">Inkoopprijs (€)</th>
+                    <th className="px-4 py-3 font-medium w-32">Menuprijs (€)</th>
                     <th className="px-4 py-3 font-medium w-40 text-right">Kost / consumptie</th>
                     <th className="px-4 py-3 font-medium w-32 text-right">Menumarge</th>
                   </tr>

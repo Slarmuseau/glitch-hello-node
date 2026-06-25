@@ -5,6 +5,9 @@ copyright: © To the Moon and Back
 # What goes into the packaged app. electron-vite outputs to out/.
 directories:
   buildResources: build
+# Ad-hoc sign the macOS app after packing (no paid Apple certificate). Without
+# a signature, Apple Silicon refuses the app with "is damaged".
+afterPack: build/afterPack.cjs
 files:
   - out/**/*
   - package.json
@@ -37,6 +40,9 @@ mac:
     - dmg
   category: public.app-category.business
   artifactName: ${productName}-${version}.${ext}
+  # electron-builder's own signing is skipped (no certificate); the afterPack
+  # hook ad-hoc signs the app instead.
+  identity: null
 
 linux:
   target:

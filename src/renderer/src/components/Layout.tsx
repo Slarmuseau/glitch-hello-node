@@ -8,6 +8,7 @@ const nav = [
   { to: '/forfaits', label: 'Forfaits' },
   { to: '/feesten', label: 'Feesten' },
   { to: '/inzichten', label: 'Inzichten' },
+  { to: '/rapporten', label: 'Rapporten' },
   { to: '/instellingen', label: 'Instellingen' },
   { to: '/over', label: 'Over' }
 ]
@@ -15,7 +16,7 @@ const nav = [
 export default function Layout(): JSX.Element {
   return (
     <div className="h-full flex">
-      <aside className="w-60 shrink-0 bg-white border-r border-cream-deep flex flex-col">
+      <aside className="hidden md:flex w-60 shrink-0 bg-white border-r border-cream-deep flex-col">
         <div className="px-5 py-6">
           <div className="flex items-center gap-2">
             <div className="h-9 w-9 rounded-xl bg-amber-500 text-white grid place-items-center font-display text-lg shadow-soft">
@@ -52,7 +53,7 @@ export default function Layout(): JSX.Element {
       </aside>
 
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-5xl mx-auto px-8 py-8">
+        <div className="max-w-5xl mx-auto px-4 md:px-8 py-6 md:py-8">
           <Outlet />
         </div>
       </main>

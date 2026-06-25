@@ -40,26 +40,44 @@ export default function Resultaat(): JSX.Element {
       >
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-xs uppercase tracking-wide text-ink-faint">Forfaitmarge</div>
+            <div className="text-xs uppercase tracking-wide text-ink-faint">
+              Forfait t.o.v. verkoop per glas
+            </div>
             <div
               className={`text-5xl font-display tabular mt-1 ${
                 gehaald ? 'text-sage-600' : 'text-clay-500'
               }`}
             >
+              {r.forfaitmarge >= 0 ? '+' : ''}
               {formatPercent(r.forfaitmarge)}
             </div>
             <div className="text-sm text-ink-soft mt-2">
-              {gehaald ? '✓ Doelmarge gehaald' : '✗ Doelmarge niet gehaald'} · doel{' '}
+              {gehaald ? '✓ Doel gehaald' : '✗ Doel niet gehaald'} · doel{' '}
               {formatPercent(r.doelmarge)} ({r.marge_verschil >= 0 ? '+' : ''}
-              {formatPercent(r.marge_verschil)})
+              {formatPercent(r.marge_verschil)}) · 0% = even goed als per glas
             </div>
           </div>
           <div className="text-right">
-            <div className="text-xs uppercase tracking-wide text-ink-faint">Resultaat</div>
-            <div className="text-3xl font-display tabular text-ink mt-1">{formatEuro(r.resultaat)}</div>
-            <div className="text-sm text-ink-soft mt-1">
-              omzet {formatEuro(r.forfait_omzet)} − kost {formatEuro(r.totaal_inkoopkost)}
+            <div className="text-xs uppercase tracking-wide text-ink-faint">T.o.v. per glas</div>
+            <div
+              className={`text-3xl font-display tabular mt-1 ${
+                r.alacarte_verschil >= 0 ? 'text-sage-600' : 'text-clay-500'
+              }`}
+            >
+              {r.alacarte_verschil >= 0 ? '+' : ''}
+              {formatEuro(r.alacarte_verschil)}
             </div>
+            <div className="text-sm text-ink-soft mt-1">
+              forfait {formatEuro(r.forfait_omzet)} − per glas {formatEuro(r.alacarte_omzet)}
+            </div>
+            <div className="text-xs text-ink-faint mt-1">
+              2de inzicht — marge op inkoop: {formatPercent(r.inkoopmarge)} ({formatEuro(r.resultaat)})
+            </div>
+            {r.totaal_korting > 0 && (
+              <div className="text-xs text-clay-500 mt-1">
+                korting aan de klant: {formatEuro(r.totaal_korting)}
+              </div>
+            )}
           </div>
         </div>
       </Card>
@@ -74,7 +92,7 @@ export default function Resultaat(): JSX.Element {
         <Card>
           <Stat
             label="Richtprijs achteraf"
-            hint="om net je doelmarge te halen"
+            hint="per glas + je doel"
             tone={r.hindsight_prijs_per_persoon <= avgPrijs(r) ? 'good' : 'bad'}
           >
             {formatEuro(r.hindsight_prijs_per_persoon)}
@@ -184,10 +202,11 @@ export default function Resultaat(): JSX.Element {
           </tfoot>
         </table>
         <div className="mt-4 flex flex-wrap gap-2">
-          <Badge>forfaitmarge = (omzet − inkoopkost) ÷ omzet</Badge>
+          <Badge>marge = (forfait-omzet − à-la-carte) ÷ à-la-carte</Badge>
           <Badge tone={gehaald ? 'good' : 'bad'}>
-            ({formatEuro(r.forfait_omzet)} − {formatEuro(r.totaal_inkoopkost)}) ÷{' '}
-            {formatEuro(r.forfait_omzet)} = {formatPercent(r.forfaitmarge)}
+            ({formatEuro(r.forfait_omzet)} − {formatEuro(r.alacarte_omzet)}) ÷{' '}
+            {formatEuro(r.alacarte_omzet)} = {r.forfaitmarge >= 0 ? '+' : ''}
+            {formatPercent(r.forfaitmarge)}
           </Badge>
         </div>
       </Card>

@@ -94,7 +94,9 @@ export function restoreImport(bundle: ExportBundle): void {
         forfait_id: null,
         forfait_naam: t.forfait_naam,
         aantal_personen: t.aantal_personen,
-        forfaitprijs_per_persoon: t.forfaitprijs_per_persoon
+        forfaitprijs_per_persoon: t.forfaitprijs_per_persoon,
+        korting_pct: t.korting_pct ?? 0,
+        duur_uur: t.duur_uur ?? 1.5
       }))
     })
     saveRegistraties(

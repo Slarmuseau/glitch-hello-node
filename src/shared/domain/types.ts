@@ -41,6 +41,11 @@ export interface Drank {
   // schenkwijze === 'uit_vat'
   /** Links to the Vat (keg) this draft beer pours from. */
   vat_id?: number | null
+
+  /** Purchase VAT rate in percent (usually 21, sometimes 6). Prices are incl. BTW. */
+  btw_inkoop?: number | null
+  /** Sales VAT rate in percent (drinks: usually 21). Prices are incl. BTW. */
+  btw_verkoop?: number | null
 }
 
 /** A barrel / keg. Store only what is measured; derive the rest. */
@@ -68,6 +73,8 @@ export interface Forfait {
   verwachte_consumpties_per_persoon?: number | null
   /** Optional, if he just wants to type an amount. */
   handmatige_prijs?: number | null
+  /** Standard duration (hours) this forfait's price/expectation is defined for. */
+  standaardduur_uur?: number | null
   /** Optional per-drink glaasgrootte override: drankId -> cl. */
   glaasgrootte_overrides?: Record<number, number>
 }
@@ -79,6 +86,10 @@ export interface Toewijzing {
   forfait_naam: string
   aantal_personen: number
   forfaitprijs_per_persoon: number
+  /** Discount the customer gets on this forfait's price, in percent (0..100). */
+  korting_pct: number
+  /** Duration of this group in hours (receptie, avondfeest, …). */
+  duur_uur: number
 }
 
 export interface Feest {
@@ -104,6 +115,11 @@ export type PrijsMomentopname = Record<number, PrijsSnapshotRegel>
 export interface Instellingen {
   standaard_doelmarge: number // 0..1
   marge_conventie: MargeConventie
+  /** Sales VAT rate in percent (drinks: 21). Prices are incl. BTW. */
+  btw_verkoop: number
+  /** Drink profile: weight of the first hour and of each further hour. */
+  duur_gewicht_eerste_uur: number
+  duur_gewicht_extra_uur: number
   bedrijfsnaam: string
   bedrijfsgegevens: string
   logo_pad?: string | null

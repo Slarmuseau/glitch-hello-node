@@ -48,6 +48,13 @@ export const TYPE_FEEST_LABEL: Record<string, string> = {
 
 export const TYPE_FEEST_OPTIES = Object.keys(TYPE_FEEST_LABEL)
 
+/** Reception durations offered, in hours. */
+export const DUREN = [1, 1.5, 2]
+
+export function duurLabel(d: number): string {
+  return `${d === 1.5 ? '1,5' : String(d)} u`
+}
+
 export function formatDatum(iso: string): string {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return iso

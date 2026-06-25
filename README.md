@@ -66,6 +66,15 @@ De server hergebruikt exact dezelfde logica als de desktop-app (via
 plek waar je de app start (aanpasbaar met de omgevingsvariabele `TAPWIJS_DATA`),
 zodat ze makkelijk te vinden en te back-uppen is.
 
+### Op je gsm invullen (zelfde wifi)
+
+De desktop-app draait zelf een kleine webserver op het lokale netwerk. Op het
+feest-scherm zit een knop **“Open op gsm”** met een QR-code. Scan die met een
+telefoon op **hetzelfde wifi-netwerk**: de volledige app opent in de browser van
+de telefoon en wat je daar registreert, landt meteen in dezelfde database op de
+pc. Geen internet, geen upload. (De interface is desktop-first; het
+registratie-scherm is op een telefoon prima bruikbaar.)
+
 ## Technisch
 
 - **Electron + React + TypeScript**, gebundeld met **electron-vite**.

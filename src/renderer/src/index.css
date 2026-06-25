@@ -59,4 +59,29 @@
   .pill {
     @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
   }
+
+  /* An empty bordered box to fill in by hand on the printed sheet. */
+  .invulvak {
+    @apply inline-block border border-ink/40 rounded-md;
+    width: 4.5rem;
+    height: 1.9rem;
+  }
+}
+
+@media print {
+  /* Print only the sheet: hide the app chrome. */
+  aside,
+  .no-print {
+    display: none !important;
+  }
+  main {
+    overflow: visible !important;
+  }
+  body {
+    background: #fff;
+  }
+  .card {
+    box-shadow: none !important;
+    border-color: #ddd !important;
+  }
 }

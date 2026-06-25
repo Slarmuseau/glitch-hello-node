@@ -11,6 +11,7 @@ import Fastify from 'fastify'
 import fastifyStatic from '@fastify/static'
 import { join } from 'path'
 import { existsSync, mkdirSync, createReadStream } from 'fs'
+import { networkInterfaces } from 'os'
 import { openDatabase, getDatabasePath, getDb } from '../main/db/database'
 import { isGeinitialiseerd, markGeinitialiseerd } from '../main/db/repo'
 import { seedDemoData } from '../main/services/seed'
@@ -32,6 +33,7 @@ if (!isGeinitialiseerd()) {
 }
 
 const app = Fastify({ logger: false, bodyLimit: 50 * 1024 * 1024 })
+const port = Number(process.env.PORT || 3000)
 
 // The built renderer. Run `npm run build` first (npm run web does this for you).
 const rendererDir = join(process.cwd(), 'out', 'renderer')
@@ -88,6 +90,17 @@ app.get('/api/backup', async (_req, reply) => {
   return reply.send(createReadStream(getDatabasePath()))
 })
 
+app.get('/api/netinfo', async () => {
+  const urls: string[] = []
+  const ifs = networkInterfaces()
+  for (const naam of Object.keys(ifs)) {
+    for (const ni of ifs[naam] ?? []) {
+      if (ni.family === 'IPv4' && !ni.internal) urls.push(`http://${ni.address}:${port}`)
+    }
+  }
+  return { result: { actief: true, port, urls } }
+})
+
 app.post('/api/import', async (request, reply) => {
   try {
     restoreImport(request.body as Parameters<typeof restoreImport>[0])
@@ -98,7 +111,6 @@ app.post('/api/import', async (request, reply) => {
   }
 })
 
-const port = Number(process.env.PORT || 3000)
 app
   .listen({ port, host: '0.0.0.0' })
   .then(() => {

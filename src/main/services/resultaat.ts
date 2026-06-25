@@ -7,6 +7,7 @@ import {
   consumptiesUitFles,
   consumptiesUitVatWeging,
   litersUitVat,
+  duurFactor,
   formatNumber,
   type FeestResultaat,
   type ResultaatRegelInput,
@@ -36,7 +37,6 @@ export function buildResultaat(feestId: number): ResultaatData | null {
   const dranken = new Map(listDranken().map((d) => [d.id, d]))
   const vaten = new Map<number, Vat>(listVaten().map((v) => [v.id, v]))
   const forfaits = new Map(listForfaits().map((f) => [f.id, f]))
-  const instellingen = getInstellingen()
 
   const regels: ResultaatRegelInput[] = []
   const toelichtingen: RegelToelichting[] = []
@@ -99,22 +99,31 @@ export function buildResultaat(feestId: number): ResultaatData | null {
     }
   }
 
+  const inst = getInstellingen()
   const attributies: AttributieInput[] = feest.toewijzingen.map((t) => {
     const forfait = t.forfait_id ? forfaits.get(t.forfait_id) : undefined
+    // Expected consumptions scale with the group's duration (same factor as the
+    // price suggestion), front-loaded vs the forfait's standard duration.
+    const factor = duurFactor(
+      t.duur_uur ?? 1.5,
+      forfait?.standaardduur_uur ?? 1.5,
+      inst.duur_gewicht_eerste_uur,
+      inst.duur_gewicht_extra_uur
+    )
+    const verwacht =
+      forfait?.verwachte_consumpties_per_persoon != null
+        ? forfait.verwachte_consumpties_per_persoon * factor
+        : null
     return {
       forfait_naam: t.forfait_naam,
       aantal_personen: t.aantal_personen,
       forfaitprijs_per_persoon: t.forfaitprijs_per_persoon,
-      verwachte_consumpties_per_persoon: forfait?.verwachte_consumpties_per_persoon ?? null
+      korting_pct: t.korting_pct ?? 0,
+      verwachte_consumpties_per_persoon: verwacht
     }
   })
 
-  const resultaat = computeFeestResultaat(
-    regels,
-    attributies,
-    feest.doelmarge,
-    instellingen.marge_conventie
-  )
+  const resultaat = computeFeestResultaat(regels, attributies, feest.doelmarge)
 
   return { feestId, resultaat, toelichtingen }
 }

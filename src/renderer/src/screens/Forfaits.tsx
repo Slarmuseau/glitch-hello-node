@@ -104,9 +104,10 @@ function tierStats(f: Forfait, dranken: Drank[], vmap: Map<number, Vat>) {
   const menus = toegestaan.map((d) => d.menuprijs)
   const gemMenu = menus.length ? menus.reduce((a, b) => a + b, 0) / menus.length : 0
   const gemKost = kosten.length ? kosten.reduce((a, b) => a + b, 0) / kosten.length : 0
-  const worstKost = kosten.length ? Math.max(...kosten) : 0
-  const worstDrank = toegestaan[kosten.indexOf(worstKost)]
-  return { toegestaan, gemMenu, gemKost, worstKost, worstDrank }
+  // The risk in a forfait is the most expensive allowed drink at its SALE price.
+  const worstMenu = menus.length ? Math.max(...menus) : 0
+  const worstDrank = toegestaan[menus.indexOf(worstMenu)]
+  return { toegestaan, gemMenu, gemKost, worstMenu, worstDrank }
 }
 
 function prijsVan(f: Forfait, gemMenu: number): { prijs: number; bron: string } {
@@ -132,9 +133,9 @@ function ForfaitKaart({
   doelmarge: number
   onEdit: () => void
 }): JSX.Element {
-  const { toegestaan, gemMenu, gemKost, worstKost, worstDrank } = tierStats(forfait, dranken, vmap)
+  const { toegestaan, gemMenu, worstMenu, worstDrank } = tierStats(forfait, dranken, vmap)
   const { prijs, bron } = prijsVan(forfait, gemMenu)
-  const buffer = bufferConsumptiesPerHoofd(prijs, gemKost, doelmarge)
+  const buffer = bufferConsumptiesPerHoofd(prijs, gemMenu, doelmarge)
 
   return (
     <Card>
@@ -155,13 +156,13 @@ function ForfaitKaart({
           <div className="text-xs text-ink-faint">{bron}</div>
         </div>
         <div>
-          <div className="text-xs uppercase tracking-wide text-ink-faint">Gem. kost / cons.</div>
-          <div className="text-2xl font-display tabular text-ink-soft mt-1">{formatEuro(gemKost)}</div>
-          <div className="text-xs text-ink-faint">prijs en kost apart</div>
+          <div className="text-xs uppercase tracking-wide text-ink-faint">Gem. menuprijs</div>
+          <div className="text-2xl font-display tabular text-ink-soft mt-1">{formatEuro(gemMenu)}</div>
+          <div className="text-xs text-ink-faint">prijs per glas</div>
         </div>
         <div>
-          <div className="text-xs uppercase tracking-wide text-ink-faint">Duurste cons.</div>
-          <div className="text-2xl font-display tabular text-clay-500 mt-1">{formatEuro(worstKost)}</div>
+          <div className="text-xs uppercase tracking-wide text-ink-faint">Duurste cons. (verkoop)</div>
+          <div className="text-2xl font-display tabular text-clay-500 mt-1">{formatEuro(worstMenu)}</div>
           <div className="text-xs text-ink-faint truncate">{worstDrank?.naam ?? '—'} (risico)</div>
         </div>
         <div>
@@ -169,14 +170,15 @@ function ForfaitKaart({
           <div className="text-2xl font-display tabular text-sage-600 mt-1">
             {Number.isFinite(buffer) ? formatNumber(buffer, 0) : '∞'}
           </div>
-          <div className="text-xs text-ink-faint">cons./hoofd boven ondergrens</div>
+          <div className="text-xs text-ink-faint">cons./hoofd tot per-glas-pariteit</div>
         </div>
       </div>
 
       {prijs > 0 && Number.isFinite(buffer) && (
         <p className="text-sm text-ink-soft mt-4 bg-cream rounded-xl px-4 py-3">
-          Bij <Money value={prijs} className="font-medium" /> blijf je boven je doelmarge tot{' '}
-          <strong>{formatNumber(buffer, 0)} consumpties per hoofd</strong>.
+          Bij <Money value={prijs} className="font-medium" /> brengt het forfait evenveel op als
+          verkoop per glas tot <strong>{formatNumber(buffer, 0)} consumpties per hoofd</strong>.
+          Drinkt een gast minder, dan win je; meer, dan geef je terug.
         </p>
       )}
     </Card>
@@ -203,6 +205,7 @@ function ForfaitEditor({
     forfait?.verwachte_consumpties_per_persoon ?? null
   )
   const [handmatig, setHandmatig] = useState<number | null>(forfait?.handmatige_prijs ?? null)
+  const [standaardduur, setStandaardduur] = useState<number>(forfait?.standaardduur_uur ?? 1.5)
   const [gekozen, setGekozen] = useState<Set<number>>(
     new Set(forfait?.toegestane_drank_ids ?? [])
   )
@@ -236,6 +239,7 @@ function ForfaitEditor({
       naam,
       verwachte_consumpties_per_persoon: verwacht,
       handmatige_prijs: handmatig,
+      standaardduur_uur: standaardduur,
       toegestane_drank_ids: [...gekozen]
     }
     await api.forfaits.upsert(payload)
@@ -268,6 +272,13 @@ function ForfaitEditor({
             value={handmatig ?? undefined}
             onCommit={(n) => setHandmatig(n || null)}
             placeholder="—"
+          />
+        </Field>
+        <Field label="Standaardduur (u)" hint="Prijs/verwachting gelden bij deze duur">
+          <NumberInput
+            value={standaardduur}
+            onCommit={(n) => setStandaardduur(Math.min(16, Math.max(1, Math.round(n * 2) / 2)))}
+            suffix="u"
           />
         </Field>
       </div>

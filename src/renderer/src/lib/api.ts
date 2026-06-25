@@ -12,7 +12,7 @@ import type {
 
 // Two transports behind one call: the Electron preload bridge when present,
 // otherwise an HTTP POST to the localhost web server. Screens never know which.
-const isElectron = typeof window !== 'undefined' && !!window.tapwijs
+export const isElectron = typeof window !== 'undefined' && !!window.tapwijs
 
 async function inv<T>(channel: string, payload?: unknown): Promise<T> {
   if (isElectron) return window.tapwijs!.invoke<T>(channel, payload)
@@ -64,6 +64,8 @@ export interface Toewijzing {
   forfait_naam: string
   aantal_personen: number
   forfaitprijs_per_persoon: number
+  korting_pct?: number
+  duur_uur?: number
 }
 
 export interface Registratie {
@@ -90,7 +92,7 @@ export interface FeestOverzicht {
 
 export interface ForfaitHistoriek {
   aantal_feesten: number
-  gemiddelde_kost_per_hoofd: number
+  gemiddelde_alacarte_per_hoofd: number
   voorgestelde_prijs: number | null
 }
 
@@ -132,9 +134,37 @@ export interface DrankAggregaat {
   categorie: string
   consumpties: number
   aandeel_consumpties: number
+  omzet: number
   inkoopkost: number
   aandeel_kost: number
   kost_per_consumptie: number
+}
+
+export interface MargeRegel {
+  drank_id: number
+  naam: string
+  categorie: string
+  menuprijs: number
+  kost: number
+  marge_per_glas: number
+  marge_pct: number
+}
+
+export interface FeestRanking {
+  feest_id: number
+  naam: string
+  type_feest: string
+  label: string
+  datum: string
+  aantal_personen: number
+  forfaitmarge: number
+  alacarte_verschil: number
+  resultaat: number
+}
+
+export interface AlcoholDeel {
+  consumpties: number
+  omzet: number
 }
 
 export interface TypePrestatie {
@@ -161,25 +191,25 @@ export interface KortingRegel {
   weggegeven: number
 }
 
-export interface Advies {
-  tone: 'goed' | 'let_op' | 'tip'
-  tekst: string
-}
-
 export interface Inzichten {
   aantal_feesten: number
   globale_marge: number
   globaal_resultaat: number
   totaal_omzet: number
   totaal_kost: number
+  totaal_alacarte: number
+  totaal_consumpties: number
+  consumpties_per_persoon: number
+  alcohol: { alcoholisch: AlcoholDeel; nonalcoholisch: AlcoholDeel }
   drankRanking: DrankAggregaat[]
   zeldenGedronken: DrankAggregaat[]
-  categorieMix: { categorie: string; consumpties: number; inkoopkost: number }[]
+  margeRanking: MargeRegel[]
+  categorieMix: { categorie: string; consumpties: number; omzet: number; inkoopkost: number }[]
   typePrestatie: TypePrestatie[]
   forfaitPrestatie: ForfaitPrestatie[]
+  feestRanking: FeestRanking[]
   kortingLedger: KortingRegel[]
   kortingTotaal: number
-  advies: Advies[]
 }
 
 export const api = {
@@ -213,7 +243,19 @@ export const api = {
     build: (feestId: number) => inv<ResultaatData | null>('resultaat:build', feestId)
   },
   inzichten: {
-    build: () => inv<Inzichten>('inzichten:build')
+    build: (van?: string, tot?: string) => inv<Inzichten>('inzichten:build', { van, tot })
+  },
+  net: {
+    info: async (): Promise<{ actief: boolean; port: number; urls: string[] }> => {
+      if (isElectron) return inv('net:info')
+      try {
+        const res = await fetch('/api/netinfo')
+        const data = await res.json()
+        return data.result
+      } catch {
+        return { actief: false, port: 0, urls: [] }
+      }
+    }
   },
   snapshot: {
     build: () => inv<PrijsMomentopname>('snapshot:build')
