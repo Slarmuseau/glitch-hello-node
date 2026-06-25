@@ -2,21 +2,20 @@ import { useMemo, useState, useEffect, useRef, type ReactNode } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api, type FeestVol, type Toewijzing, type Registratie } from '../lib/api'
 import { useData } from '../lib/hooks'
-import { vatMap, TYPE_FEEST_LABEL, TYPE_FEEST_OPTIES, DUREN, duurLabel } from '../lib/calc'
+import { vatMap, TYPE_FEEST_LABEL, TYPE_FEEST_OPTIES } from '../lib/calc'
 import { PageHeader, Card, Field, Badge } from '../components/ui'
 import { NumberInput } from '../components/NumberInput'
 import { useToast } from '../components/Toast'
 import { MobielModal } from '../components/MobielModal'
 import {
   suggestedForfaitPrijs,
-  duurAanpassingPct,
+  duurFactor,
   euro,
   formatEuro,
   formatPercent,
   type Drank,
   type Forfait,
-  type Vat,
-  type TypeFeestConfig
+  type Vat
 } from '@shared/domain'
 
 export default function FeestDetail(): JSX.Element {
@@ -41,7 +40,8 @@ export default function FeestDetail(): JSX.Element {
       forfaits={forfaits.data ?? []}
       dranken={dranken.data ?? []}
       vaten={vaten.data ?? []}
-      typeConfig={inst.data?.type_feest_config ?? {}}
+      eersteUur={inst.data?.duur_gewicht_eerste_uur ?? 2}
+      extraUur={inst.data?.duur_gewicht_extra_uur ?? 1}
       onSaved={() => feest.reload()}
       onRefresh={() => feest.reload()}
       onResultaat={() => nav(`/feesten/${feestId}/resultaat`)}
@@ -113,7 +113,8 @@ function FeestForm({
   forfaits,
   dranken,
   vaten,
-  typeConfig,
+  eersteUur,
+  extraUur,
   onSaved,
   onRefresh,
   onResultaat,
@@ -125,7 +126,8 @@ function FeestForm({
   forfaits: Forfait[]
   dranken: Drank[]
   vaten: Vat[]
-  typeConfig: Record<string, TypeFeestConfig>
+  eersteUur: number
+  extraUur: number
   onSaved: () => void
   onRefresh: () => void
   onResultaat: () => void
@@ -226,14 +228,23 @@ function FeestForm({
   const teTonen = alleDranken ? dranken : dranken.filter((d) => toegestaneIds.has(d.id))
   const aantalPersonen = toewijzingen.reduce((s, t) => s + t.aantal_personen, 0)
 
-  // Duration-based price suggestion for the current party type.
-  const huidigeConfig = typeConfig[type]
-  const standaardDuur = huidigeConfig?.standaardduur ?? 1.5
-  const pctVoorDuur = (duur: number): number => duurAanpassingPct(huidigeConfig, duur)
+  // Duration-based price suggestion, front-loaded vs each forfait's standard duration.
+  const clampDuur = (n: number): number => Math.min(16, Math.max(1, Math.round(n * 2) / 2))
+  const standaardDuurVan = (forfaitId: number | null): number =>
+    forfaits.find((x) => x.id === forfaitId)?.standaardduur_uur ?? 1.5
+  const basisPrijs = (forfaitId: number | null): number => {
+    const f = forfaits.find((x) => x.id === forfaitId)
+    return f ? forfaitPrijs(f, dranken) : 0
+  }
   const prijsMetDuur = (forfaitId: number | null, duur: number): number => {
     const f = forfaits.find((x) => x.id === forfaitId)
     if (!f) return 0
-    return euro(forfaitPrijs(f, dranken) * (1 + pctVoorDuur(duur) / 100))
+    return euro(forfaitPrijs(f, dranken) * duurFactor(duur, f.standaardduur_uur ?? 1.5, eersteUur, extraUur))
+  }
+  /** Uplift/downlift derived from the actual price vs the base price. */
+  const upliftPct = (t: Toewijzing): number => {
+    const basis = basisPrijs(t.forfait_id)
+    return basis > 0 ? t.forfaitprijs_per_persoon / basis - 1 : 0
   }
 
   const bewaarFeest = async (): Promise<void> => {
@@ -366,9 +377,9 @@ function FeestForm({
                   forfait_id: forfaits[0]?.id ?? null,
                   forfait_naam: forfaits[0]?.naam ?? '',
                   aantal_personen: 0,
-                  forfaitprijs_per_persoon: prijsMetDuur(forfaits[0]?.id ?? null, standaardDuur),
+                  forfaitprijs_per_persoon: basisPrijs(forfaits[0]?.id ?? null),
                   korting_pct: 0,
-                  duur_uur: standaardDuur
+                  duur_uur: standaardDuurVan(forfaits[0]?.id ?? null)
                 }
               ])
             }
@@ -399,9 +410,8 @@ function FeestForm({
                                 ...x,
                                 forfait_id: fid,
                                 forfait_naam: f?.naam ?? '',
-                                forfaitprijs_per_persoon: f
-                                  ? prijsMetDuur(fid, x.duur_uur ?? standaardDuur)
-                                  : x.forfaitprijs_per_persoon
+                                duur_uur: f ? standaardDuurVan(fid) : x.duur_uur,
+                                forfaitprijs_per_persoon: f ? basisPrijs(fid) : x.forfaitprijs_per_persoon
                               }
                             : x
                         )
@@ -430,12 +440,11 @@ function FeestForm({
                 </Field>
               </div>
               <div className="col-span-2">
-                <Field label="Duur">
-                  <select
-                    className="input"
-                    value={t.duur_uur ?? standaardDuur}
-                    onChange={(e) => {
-                      const duur = Number(e.target.value)
+                <Field label="Duur (u)" hint="1–16 u, per half uur">
+                  <NumberInput
+                    value={t.duur_uur ?? 1.5}
+                    onCommit={(n) => {
+                      const duur = clampDuur(n)
                       setToewijzingen((prev) =>
                         prev.map((x, j) =>
                           j === i
@@ -450,18 +459,15 @@ function FeestForm({
                         )
                       )
                     }}
-                  >
-                    {DUREN.map((d) => (
-                      <option key={d} value={d}>
-                        {duurLabel(d)} ({pctVoorDuur(d) >= 0 ? '+' : ''}
-                        {formatPercent(pctVoorDuur(d) / 100)})
-                      </option>
-                    ))}
-                  </select>
+                    suffix="u"
+                  />
                 </Field>
               </div>
               <div className="col-span-2">
-                <Field label="Prijs / persoon">
+                <Field
+                  label="Prijs / persoon"
+                  hint={`${upliftPct(t) >= 0 ? '+' : ''}${formatPercent(upliftPct(t))} t.o.v. basis`}
+                >
                   <NumberInput
                     value={t.forfaitprijs_per_persoon}
                     onCommit={(n) =>

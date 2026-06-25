@@ -4,12 +4,11 @@ import { useData } from '../lib/hooks'
 import { PageHeader, Card, Field } from '../components/ui'
 import { NumberInput } from '../components/NumberInput'
 import { useToast } from '../components/Toast'
-import { TYPE_FEEST_LABEL, TYPE_FEEST_OPTIES, DUREN, duurLabel } from '../lib/calc'
 import {
-  STANDAARD_DUUR_AANPASSINGEN,
+  duurFactor,
+  formatNumber,
   type Instellingen as InstellingenType,
-  type MargeConventie,
-  type TypeFeestConfig
+  type MargeConventie
 } from '@shared/domain'
 
 export default function Instellingen(): JSX.Element {
@@ -97,8 +96,8 @@ export default function Instellingen(): JSX.Element {
         {/* Categorieen */}
         <CategorieBeheer data={data} onSave={save} />
 
-        {/* Duur & prijs per type feest */}
-        <DuurBeheer data={data} onSave={save} />
+        {/* Drinkprofiel (duur) */}
+        <DrinkprofielBeheer data={data} onSave={save} />
 
         {/* Data */}
         <Card>
@@ -228,84 +227,42 @@ function LogoKiezer({
   )
 }
 
-function DuurBeheer({
+function DrinkprofielBeheer({
   data,
   onSave
 }: {
   data: InstellingenType
   onSave: (patch: Partial<InstellingenType>) => Promise<void>
 }): JSX.Element {
-  const config = data.type_feest_config ?? {}
-  const cfgVoor = (t: string): TypeFeestConfig =>
-    config[t] ?? { standaardduur: 1.5, aanpassingen: STANDAARD_DUUR_AANPASSINGEN.map((x) => ({ ...x })) }
-  const pctVoor = (t: string, duur: number): number =>
-    cfgVoor(t).aanpassingen.find((a) => a.duur === duur)?.pct ?? 0
-  const update = (t: string, next: TypeFeestConfig): Promise<void> =>
-    onSave({ type_feest_config: { ...config, [t]: next } })
-
+  const eerste = data.duur_gewicht_eerste_uur ?? 2
+  const extra = data.duur_gewicht_extra_uur ?? 1
+  const voorbeeld = (duur: number): string => {
+    const f = duurFactor(duur, 1.5, eerste, extra)
+    return `${f >= 1 ? '+' : ''}${formatNumber((f - 1) * 100, 0)}%`
+  }
   return (
     <Card>
       <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wide mb-2">
-        Duur en prijs per type feest
+        Drinkprofiel (duur)
       </h2>
       <p className="text-sm text-ink-soft mb-4">
-        Stel per type een standaardduur in, en de prijsaanpassing (%) per duur t.o.v. de
-        standaardprijs. Vrij instelbaar (hoeft niet lineair te zijn). Dezelfde aanpassing schaalt
-        ook de verwachte consumpties.
+        Mensen drinken het meest in het eerste uur. Stel in hoe zwaar het eerste uur weegt
+        tegenover elk volgend uur. Dit bepaalt de <strong>prijsvoorstellen</strong> en de
+        verwachte consumpties bij langere of kortere groepen (de standaardduur stel je per forfait
+        in). Je beslist altijd zelf de uiteindelijke prijs.
       </p>
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-left text-xs uppercase tracking-wide text-ink-faint border-b border-cream-deep">
-            <th className="py-2 pr-3 font-medium">Type feest</th>
-            <th className="py-2 px-3 font-medium">Standaardduur</th>
-            {DUREN.map((d) => (
-              <th key={d} className="py-2 px-3 font-medium text-right">
-                {duurLabel(d)}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {TYPE_FEEST_OPTIES.map((t) => {
-            const c = cfgVoor(t)
-            return (
-              <tr key={t} className="border-b border-cream-deep/60 last:border-0">
-                <td className="py-2 pr-3 text-ink">{TYPE_FEEST_LABEL[t]}</td>
-                <td className="py-2 px-3">
-                  <select
-                    className="input w-24"
-                    value={c.standaardduur}
-                    onChange={(e) => update(t, { ...c, standaardduur: Number(e.target.value) })}
-                  >
-                    {DUREN.map((d) => (
-                      <option key={d} value={d}>
-                        {duurLabel(d)}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                {DUREN.map((d) => (
-                  <td key={d} className="py-2 px-3 w-24">
-                    <NumberInput
-                      value={pctVoor(t, d)}
-                      onCommit={(n) =>
-                        update(t, {
-                          ...c,
-                          aanpassingen: DUREN.map((dd) => ({
-                            duur: dd,
-                            pct: dd === d ? n : pctVoor(t, dd)
-                          }))
-                        })
-                      }
-                      suffix="%"
-                    />
-                  </td>
-                ))}
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
+      <div className="grid grid-cols-2 gap-4 max-w-md">
+        <Field label="Gewicht eerste uur" hint="bv. 2">
+          <NumberInput value={eerste} onCommit={(n) => onSave({ duur_gewicht_eerste_uur: n })} />
+        </Field>
+        <Field label="Gewicht per volgend uur" hint="bv. 1">
+          <NumberInput value={extra} onCommit={(n) => onSave({ duur_gewicht_extra_uur: n })} />
+        </Field>
+      </div>
+      <div className="text-xs text-ink-faint mt-3">
+        Voorbeeld t.o.v. een standaard van 1,5 u: 1 u {voorbeeld(1)} · 2 u {voorbeeld(2)} · 4 u{' '}
+        {voorbeeld(4)} · 8 u {voorbeeld(8)}.
+      </div>
     </Card>
   )
 }

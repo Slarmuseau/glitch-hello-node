@@ -73,6 +73,8 @@ export interface Forfait {
   verwachte_consumpties_per_persoon?: number | null
   /** Optional, if he just wants to type an amount. */
   handmatige_prijs?: number | null
+  /** Standard duration (hours) this forfait's price/expectation is defined for. */
+  standaardduur_uur?: number | null
   /** Optional per-drink glaasgrootte override: drankId -> cl. */
   glaasgrootte_overrides?: Record<number, number>
 }
@@ -110,20 +112,14 @@ export interface PrijsSnapshotRegel {
 
 export type PrijsMomentopname = Record<number, PrijsSnapshotRegel>
 
-/** Per party type: a standard duration and a price/consumption adjustment (%)
- *  per duration. The adjustment is manager-defined (non-linear). */
-export interface TypeFeestConfig {
-  standaardduur: number
-  aanpassingen: { duur: number; pct: number }[]
-}
-
 export interface Instellingen {
   standaard_doelmarge: number // 0..1
   marge_conventie: MargeConventie
   /** Sales VAT rate in percent (drinks: 21). Prices are incl. BTW. */
   btw_verkoop: number
-  /** Per party type: standard duration + price adjustment (%) per duration. */
-  type_feest_config: Record<string, TypeFeestConfig>
+  /** Drink profile: weight of the first hour and of each further hour. */
+  duur_gewicht_eerste_uur: number
+  duur_gewicht_extra_uur: number
   bedrijfsnaam: string
   bedrijfsgegevens: string
   logo_pad?: string | null

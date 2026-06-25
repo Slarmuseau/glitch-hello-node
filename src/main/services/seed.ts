@@ -116,22 +116,7 @@ export function seedDemoData(): void {
       Cocktails: 20,
       Mocktails: 25
     },
-    standaard_inkoopmarge_per_categorie: {},
-    // Per party type: standard 1,5u, with a (non-linear) price/consumption
-    // adjustment per duration. Front-loaded: 1u is proportionally pricier.
-    type_feest_config: Object.fromEntries(
-      ['huwelijk', 'bedrijfsfeest', 'communie', 'verjaardag', 'scoutsfeest', 'andere'].map((t) => [
-        t,
-        {
-          standaardduur: 1.5,
-          aanpassingen: [
-            { duur: 1, pct: -20 },
-            { duur: 1.5, pct: 0 },
-            { duur: 2, pct: 12 }
-          ]
-        }
-      ])
-    )
+    standaard_inkoopmarge_per_categorie: {}
   })
 
   // Vaten (30L, 10kg tare, density 1.0, 5% loss — the template).

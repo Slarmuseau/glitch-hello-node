@@ -6,27 +6,30 @@ import {
   suggestedForfaitPrijs,
   forfaitPrijsVoorMarge,
   bufferConsumptiesPerHoofd,
-  duurAanpassingPct
+  duurFactor
 } from './pricing'
 
-describe('duration adjustment is front-loaded (1u proportionally pricier)', () => {
-  it('falls back to the default curve when not configured', () => {
-    expect(duurAanpassingPct(null, 1)).toBe(-20)
-    expect(duurAanpassingPct(undefined, 1.5)).toBe(0)
-    expect(duurAanpassingPct(null, 2)).toBe(12)
+describe('duration factor is front-loaded (1u proportionally pricier than 2u)', () => {
+  it('is 1.0 at the standard duration', () => {
+    expect(duurFactor(1.5, 1.5)).toBeCloseTo(1, 6)
   })
 
-  it('uses the manager-defined value when configured', () => {
-    const cfg = { aanpassingen: [{ duur: 1, pct: -10 }, { duur: 2, pct: 25 }] }
-    expect(duurAanpassingPct(cfg, 1)).toBe(-10)
-    expect(duurAanpassingPct(cfg, 2)).toBe(25)
+  it('longer is more expensive but sub-linear', () => {
+    // default weights eerste=2, extra=1; standard 1.5 -> weight 2.5
+    expect(duurFactor(1, 1.5)).toBeCloseTo(2 / 2.5, 6) // 0.8
+    expect(duurFactor(2, 1.5)).toBeCloseTo(3 / 2.5, 6) // 1.2
+    expect(duurFactor(4, 1.5)).toBeCloseTo(5 / 2.5, 6) // 2.0 for 4h, not 2.67 (linear)
   })
 
-  it('per-hour price decreases with duration (sub-linear)', () => {
-    // default: 1u -20% over 1h, 2u +12% over 2h
-    const p1 = 100 * (1 - 0.2)
-    const p2 = 100 * (1 + 0.12)
-    expect(p1 / 1).toBeGreaterThan(p2 / 2)
+  it('price per hour decreases with duration', () => {
+    const p1 = 100 * duurFactor(1, 1.5)
+    const p4 = 100 * duurFactor(4, 1.5)
+    expect(p1 / 1).toBeGreaterThan(p4 / 4)
+  })
+
+  it('respects a custom drink profile', () => {
+    // flat profile (eerste=1, extra=1) is linear in hours
+    expect(duurFactor(3, 1.5, 1, 1)).toBeCloseTo(3 / 1.5, 6)
   })
 })
 

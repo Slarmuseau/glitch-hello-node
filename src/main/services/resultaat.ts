@@ -7,7 +7,7 @@ import {
   consumptiesUitFles,
   consumptiesUitVatWeging,
   litersUitVat,
-  duurAanpassingPct,
+  duurFactor,
   formatNumber,
   type FeestResultaat,
   type ResultaatRegelInput,
@@ -99,11 +99,17 @@ export function buildResultaat(feestId: number): ResultaatData | null {
     }
   }
 
-  const config = getInstellingen().type_feest_config?.[feest.type_feest]
+  const inst = getInstellingen()
   const attributies: AttributieInput[] = feest.toewijzingen.map((t) => {
     const forfait = t.forfait_id ? forfaits.get(t.forfait_id) : undefined
-    // Expected consumptions scale with the group's duration (same % as price).
-    const factor = 1 + duurAanpassingPct(config, t.duur_uur ?? 1.5) / 100
+    // Expected consumptions scale with the group's duration (same factor as the
+    // price suggestion), front-loaded vs the forfait's standard duration.
+    const factor = duurFactor(
+      t.duur_uur ?? 1.5,
+      forfait?.standaardduur_uur ?? 1.5,
+      inst.duur_gewicht_eerste_uur,
+      inst.duur_gewicht_extra_uur
+    )
     const verwacht =
       forfait?.verwachte_consumpties_per_persoon != null
         ? forfait.verwachte_consumpties_per_persoon * factor

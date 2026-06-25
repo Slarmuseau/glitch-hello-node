@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS instellingen (
   standaard_doelmarge REAL NOT NULL DEFAULT 0.05,
   marge_conventie TEXT NOT NULL DEFAULT 'op_de_omzet',
   btw_verkoop REAL NOT NULL DEFAULT 21,
-  type_feest_config TEXT NOT NULL DEFAULT '{}',
+  duur_gewicht_eerste_uur REAL NOT NULL DEFAULT 2,
+  duur_gewicht_extra_uur REAL NOT NULL DEFAULT 1,
   bedrijfsnaam TEXT NOT NULL DEFAULT '',
   bedrijfsgegevens TEXT NOT NULL DEFAULT '',
   logo_pad TEXT,
@@ -56,6 +57,7 @@ CREATE TABLE IF NOT EXISTS forfaits (
   naam TEXT NOT NULL,
   verwachte_consumpties_per_persoon REAL,
   handmatige_prijs REAL,
+  standaardduur_uur REAL NOT NULL DEFAULT 1.5,
   sort_order INTEGER NOT NULL DEFAULT 0
 );
 

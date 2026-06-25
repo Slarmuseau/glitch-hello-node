@@ -60,27 +60,30 @@ export function forfaitPrijsVoorMarge(alacarte_per_persoon: number, doelmarge: n
   return alacarte_per_persoon * (1 + doelmarge)
 }
 
-/** Default, front-loaded duration curve (vs a 1,5u standard) used until the
- *  manager configures their own per type. */
-export const STANDAARD_DUUR_AANPASSINGEN: { duur: number; pct: number }[] = [
-  { duur: 1, pct: -20 },
-  { duur: 1.5, pct: 0 },
-  { duur: 2, pct: 12 }
-]
+/** Default front-loaded drink profile: the first hour weighs ~2, each further
+ *  hour ~1 (a common catering rule of thumb). Tunable in settings. */
+export const STANDAARD_DUUR_GEWICHT = { eerste_uur: 2, per_extra_uur: 1 }
+
+/** Relative drink "weight" for a duration, front-loaded. */
+export function duurGewicht(uren: number, eerste_uur = 2, per_extra_uur = 1): number {
+  const t = Math.max(0, uren)
+  return eerste_uur * Math.min(t, 1) + per_extra_uur * Math.max(0, t - 1)
+}
 
 /**
- * Price/consumption adjustment (%) for a given duration, from a party type's
- * config. Manager-defined per duration (non-linear). Falls back to the default
- * curve when no config (or no entry for that duration) exists.
+ * Price/consumption multiplier for a duration vs a base (standard) duration,
+ * using the front-loaded profile. 1.0 at the standard duration; longer is
+ * higher but sub-linear (1u is proportionally pricier than 2u).
  */
-export function duurAanpassingPct(
-  config: { aanpassingen: { duur: number; pct: number }[] } | undefined | null,
-  duur: number
+export function duurFactor(
+  duur: number,
+  standaardduur: number,
+  eerste_uur = 2,
+  per_extra_uur = 1
 ): number {
-  const aanp = config?.aanpassingen ?? STANDAARD_DUUR_AANPASSINGEN
-  const m = aanp.find((a) => a.duur === duur)
-  if (m) return m.pct
-  return STANDAARD_DUUR_AANPASSINGEN.find((a) => a.duur === duur)?.pct ?? 0
+  const basis = duurGewicht(standaardduur, eerste_uur, per_extra_uur)
+  if (basis <= 0) return 1
+  return duurGewicht(duur, eerste_uur, per_extra_uur) / basis
 }
 
 /**

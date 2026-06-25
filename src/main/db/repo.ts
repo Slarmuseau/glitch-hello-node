@@ -152,6 +152,7 @@ function mapForfait(row: any): Forfait {
     naam: row.naam,
     verwachte_consumpties_per_persoon: row.verwachte_consumpties_per_persoon,
     handmatige_prijs: row.handmatige_prijs,
+    standaardduur_uur: row.standaardduur_uur ?? 1.5,
     toegestane_drank_ids: koppelingen.map((k) => k.drank_id),
     glaasgrootte_overrides: overrides
   }
@@ -169,23 +170,25 @@ export function upsertForfait(f: Omit<Forfait, 'id'> & { id?: number }): Forfait
       db.prepare(
         `UPDATE forfaits SET naam=@naam,
           verwachte_consumpties_per_persoon=@verwachte_consumpties_per_persoon,
-          handmatige_prijs=@handmatige_prijs WHERE id=@id`
+          handmatige_prijs=@handmatige_prijs, standaardduur_uur=@standaardduur_uur WHERE id=@id`
       ).run({
         naam: f.naam,
         verwachte_consumpties_per_persoon: f.verwachte_consumpties_per_persoon ?? null,
         handmatige_prijs: f.handmatige_prijs ?? null,
+        standaardduur_uur: f.standaardduur_uur ?? 1.5,
         id
       })
     } else {
       const info = db
         .prepare(
-          `INSERT INTO forfaits (naam, verwachte_consumpties_per_persoon, handmatige_prijs)
-           VALUES (@naam, @verwachte_consumpties_per_persoon, @handmatige_prijs)`
+          `INSERT INTO forfaits (naam, verwachte_consumpties_per_persoon, handmatige_prijs, standaardduur_uur)
+           VALUES (@naam, @verwachte_consumpties_per_persoon, @handmatige_prijs, @standaardduur_uur)`
         )
         .run({
           naam: f.naam,
           verwachte_consumpties_per_persoon: f.verwachte_consumpties_per_persoon ?? null,
-          handmatige_prijs: f.handmatige_prijs ?? null
+          handmatige_prijs: f.handmatige_prijs ?? null,
+          standaardduur_uur: f.standaardduur_uur ?? 1.5
         })
       id = Number(info.lastInsertRowid)
     }
@@ -402,7 +405,8 @@ export function getInstellingen(): Instellingen {
     standaard_doelmarge: row.standaard_doelmarge,
     marge_conventie: row.marge_conventie,
     btw_verkoop: row.btw_verkoop ?? 21,
-    type_feest_config: JSON.parse(row.type_feest_config || '{}'),
+    duur_gewicht_eerste_uur: row.duur_gewicht_eerste_uur ?? 2,
+    duur_gewicht_extra_uur: row.duur_gewicht_extra_uur ?? 1,
     bedrijfsnaam: row.bedrijfsnaam,
     bedrijfsgegevens: row.bedrijfsgegevens,
     logo_pad: row.logo_pad,
@@ -419,7 +423,8 @@ export function saveInstellingen(s: Instellingen): Instellingen {
     .prepare(
       `UPDATE instellingen SET standaard_doelmarge=@standaard_doelmarge,
         marge_conventie=@marge_conventie, btw_verkoop=@btw_verkoop,
-        type_feest_config=@type_feest_config, bedrijfsnaam=@bedrijfsnaam,
+        duur_gewicht_eerste_uur=@duur_gewicht_eerste_uur,
+        duur_gewicht_extra_uur=@duur_gewicht_extra_uur, bedrijfsnaam=@bedrijfsnaam,
         bedrijfsgegevens=@bedrijfsgegevens, logo_pad=@logo_pad, backup_locatie=@backup_locatie,
         categorieen=@categorieen,
         standaard_glaasgrootte_per_categorie=@standaard_glaasgrootte_per_categorie,
@@ -430,7 +435,8 @@ export function saveInstellingen(s: Instellingen): Instellingen {
       standaard_doelmarge: s.standaard_doelmarge,
       marge_conventie: s.marge_conventie,
       btw_verkoop: s.btw_verkoop ?? 21,
-      type_feest_config: JSON.stringify(s.type_feest_config ?? {}),
+      duur_gewicht_eerste_uur: s.duur_gewicht_eerste_uur ?? 2,
+      duur_gewicht_extra_uur: s.duur_gewicht_extra_uur ?? 1,
       bedrijfsnaam: s.bedrijfsnaam,
       bedrijfsgegevens: s.bedrijfsgegevens,
       logo_pad: s.logo_pad ?? null,

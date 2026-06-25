@@ -205,6 +205,7 @@ function ForfaitEditor({
     forfait?.verwachte_consumpties_per_persoon ?? null
   )
   const [handmatig, setHandmatig] = useState<number | null>(forfait?.handmatige_prijs ?? null)
+  const [standaardduur, setStandaardduur] = useState<number>(forfait?.standaardduur_uur ?? 1.5)
   const [gekozen, setGekozen] = useState<Set<number>>(
     new Set(forfait?.toegestane_drank_ids ?? [])
   )
@@ -238,6 +239,7 @@ function ForfaitEditor({
       naam,
       verwachte_consumpties_per_persoon: verwacht,
       handmatige_prijs: handmatig,
+      standaardduur_uur: standaardduur,
       toegestane_drank_ids: [...gekozen]
     }
     await api.forfaits.upsert(payload)
@@ -270,6 +272,13 @@ function ForfaitEditor({
             value={handmatig ?? undefined}
             onCommit={(n) => setHandmatig(n || null)}
             placeholder="—"
+          />
+        </Field>
+        <Field label="Standaardduur (u)" hint="Prijs/verwachting gelden bij deze duur">
+          <NumberInput
+            value={standaardduur}
+            onCommit={(n) => setStandaardduur(Math.min(16, Math.max(1, Math.round(n * 2) / 2)))}
+            suffix="u"
           />
         </Field>
       </div>

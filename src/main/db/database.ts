@@ -36,12 +36,20 @@ function runMigrations(database: Database.Database): void {
     database.exec('ALTER TABLE dranken ADD COLUMN btw_verkoop REAL NOT NULL DEFAULT 21')
   }
 
+  const forfaits = kolommen('forfaits')
+  if (!forfaits.includes('standaardduur_uur')) {
+    database.exec('ALTER TABLE forfaits ADD COLUMN standaardduur_uur REAL NOT NULL DEFAULT 1.5')
+  }
+
   const instellingen = kolommen('instellingen')
   if (!instellingen.includes('btw_verkoop')) {
     database.exec('ALTER TABLE instellingen ADD COLUMN btw_verkoop REAL NOT NULL DEFAULT 21')
   }
-  if (!instellingen.includes('type_feest_config')) {
-    database.exec("ALTER TABLE instellingen ADD COLUMN type_feest_config TEXT NOT NULL DEFAULT '{}'")
+  if (!instellingen.includes('duur_gewicht_eerste_uur')) {
+    database.exec('ALTER TABLE instellingen ADD COLUMN duur_gewicht_eerste_uur REAL NOT NULL DEFAULT 2')
+  }
+  if (!instellingen.includes('duur_gewicht_extra_uur')) {
+    database.exec('ALTER TABLE instellingen ADD COLUMN duur_gewicht_extra_uur REAL NOT NULL DEFAULT 1')
   }
 }
 
