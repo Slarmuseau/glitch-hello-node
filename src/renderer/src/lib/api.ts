@@ -12,7 +12,7 @@ import type {
 
 // Two transports behind one call: the Electron preload bridge when present,
 // otherwise an HTTP POST to the localhost web server. Screens never know which.
-const isElectron = typeof window !== 'undefined' && !!window.tapwijs
+export const isElectron = typeof window !== 'undefined' && !!window.tapwijs
 
 async function inv<T>(channel: string, payload?: unknown): Promise<T> {
   if (isElectron) return window.tapwijs!.invoke<T>(channel, payload)

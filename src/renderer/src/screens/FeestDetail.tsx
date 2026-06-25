@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect, useRef, type ReactNode } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { api, type FeestVol, type Toewijzing, type Registratie } from '../lib/api'
+import { api, isElectron, type FeestVol, type Toewijzing, type Registratie } from '../lib/api'
 import { useData } from '../lib/hooks'
 import { vatMap, TYPE_FEEST_LABEL, TYPE_FEEST_OPTIES } from '../lib/calc'
 import { PageHeader, Card, Field, Badge } from '../components/ui'
@@ -135,6 +135,11 @@ function FeestForm({
   onDeleted: () => void
   toast: (t: string, tone?: 'info' | 'good' | 'bad') => void
 }): JSX.Element {
+  // On a phone/browser (web mode) there is no Electron bridge. The phone is
+  // the ACTIVE editor there, so it must never auto-refresh itself away from
+  // in-progress input, and after saving it should stay put with a clear
+  // confirmation instead of navigating to the PC-oriented result screen.
+  const isWeb = !isElectron
   const vmap = vatMap(vaten)
   const [naam, setNaam] = useState(feest.naam)
   const [type, setType] = useState<string>(feest.type_feest)
@@ -200,13 +205,17 @@ function FeestForm({
     reg: feest.registraties
   })
   useEffect(() => {
+    // Only the PC auto-refreshes (to pick up input typed on a phone). The
+    // phone itself is the active editor and must never reload itself away
+    // from in-progress input — that's exactly what made saved input "vanish".
+    if (isWeb) return
     const id = setInterval(() => {
       const pristine = lokaalRef.current === opgeslagenRef.current
       const idle = Date.now() - laatsteInteractieRef.current > 20000
       if (pristine && idle) onRefreshRef.current()
     }, 10000)
     return () => clearInterval(id)
-  }, [])
+  }, [isWeb])
 
   const setRegVeld = (drankId: number, veld: keyof Registratie, val: number): void =>
     setReg((prev) => {
@@ -260,31 +269,55 @@ function FeestForm({
       toewijzingen
     })
     onSaved()
-    toast('Feest opgeslagen', 'good')
+  }
+
+  const foutmelding = (e: unknown): string =>
+    e instanceof Error ? e.message : String(e)
+
+  // The "Opslaan" buttons. Always confirm explicitly, and surface any failure
+  // — a silent error is what made the phone's input seem to "vanish".
+  const opslaan = async (): Promise<void> => {
+    try {
+      await bewaarFeest()
+      toast('Feest opgeslagen', 'good')
+    } catch (e) {
+      toast('Bewaren mislukt: ' + foutmelding(e), 'bad')
+    }
   }
 
   const herneemSnapshot = async (): Promise<void> => {
-    const snapshot = await api.snapshot.build()
-    await api.feesten.upsert({
-      id: feest.id,
-      naam,
-      type_feest: type,
-      datum,
-      publiek: publiek || null,
-      doelmarge,
-      korting_reden: kortingReden || null,
-      prijs_momentopname: snapshot,
-      toewijzingen
-    })
-    onSaved()
-    toast('Prijzen opnieuw vastgelegd', 'good')
+    try {
+      const snapshot = await api.snapshot.build()
+      await api.feesten.upsert({
+        id: feest.id,
+        naam,
+        type_feest: type,
+        datum,
+        publiek: publiek || null,
+        doelmarge,
+        korting_reden: kortingReden || null,
+        prijs_momentopname: snapshot,
+        toewijzingen
+      })
+      onSaved()
+      toast('Prijzen opnieuw vastgelegd', 'good')
+    } catch (e) {
+      toast('Bewaren mislukt: ' + foutmelding(e), 'bad')
+    }
   }
 
   const bewaarRegistratie = async (): Promise<void> => {
-    await bewaarFeest()
-    await api.feesten.saveRegistraties(feest.id, [...reg.values()])
-    toast('Registratie opgeslagen', 'good')
-    onResultaat()
+    try {
+      await bewaarFeest()
+      await api.feesten.saveRegistraties(feest.id, [...reg.values()])
+      toast('Registratie opgeslagen', 'good')
+      // On a phone, stay on the form and reload so the saved input is visibly
+      // confirmed (it now matches the server). On the PC, go to the result.
+      if (isWeb) onSaved()
+      else onResultaat()
+    } catch (e) {
+      toast('Bewaren mislukt: ' + foutmelding(e), 'bad')
+    }
   }
 
   const verwijder = async (): Promise<void> => {
@@ -310,7 +343,7 @@ function FeestForm({
             <button className="btn-outline" onClick={onBlad}>
               Afdrukbaar blad
             </button>
-            <button className="btn-outline" onClick={bewaarFeest}>
+            <button className="btn-outline" onClick={opslaan}>
               Opslaan
             </button>
           </>
@@ -528,18 +561,25 @@ function FeestForm({
             Registratie na het feest
           </h2>
           <div className="flex items-center gap-4">
-            <button
-              className="text-xs text-amber-700 hover:underline"
-              onClick={() => {
-                onRefresh()
-                toast('Vernieuwd — laatste invoer opgehaald')
-              }}
-            >
-              ↻ Vernieuwen
-            </button>
-            <button className="text-xs text-amber-700 hover:underline" onClick={() => setMobielOpen(true)}>
-              📱 Open op gsm
-            </button>
+            {!isWeb && (
+              <>
+                <button
+                  className="text-xs text-amber-700 hover:underline"
+                  onClick={() => {
+                    onRefresh()
+                    toast('Vernieuwd — laatste invoer opgehaald')
+                  }}
+                >
+                  ↻ Vernieuwen
+                </button>
+                <button
+                  className="text-xs text-amber-700 hover:underline"
+                  onClick={() => setMobielOpen(true)}
+                >
+                  📱 Open op gsm
+                </button>
+              </>
+            )}
             <label className="flex items-center gap-2 text-xs text-ink-soft">
               <input
                 type="checkbox"
@@ -574,7 +614,7 @@ function FeestForm({
         )}
 
         <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-cream-deep">
-          <button className="btn-outline" onClick={bewaarFeest}>
+          <button className="btn-outline" onClick={opslaan}>
             Opslaan zonder resultaat
           </button>
           <button className="btn-primary" onClick={bewaarRegistratie}>
